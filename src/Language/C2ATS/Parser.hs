@@ -1,8 +1,8 @@
-module Lib
-    ( parseMyFile
-    , printMyAST
-    , printMyGlobal
-    ) where
+module Language.C2ATS.Parser
+       ( parseMyFile
+       , printMyAST
+       , printMyGlobal
+       ) where
 
 import System.IO
 import Control.Arrow      hiding ((<+>))

@@ -2,7 +2,7 @@ module Main where
 
 import Control.Monad (when)
 import System.Environment (getArgs)
-import Lib
+import Language.C2ATS
 
 main :: IO ()
 main = do
@@ -14,4 +14,3 @@ main = do
   mapM_ (\a -> do
             print . fst $ a
             printMyGlobal . snd $ a) gglobals
-  return ()

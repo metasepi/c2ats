@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     Language.C2ATS
+                     , Language.C2ATS.Parser
   build-depends:       base >= 4.7
                      , language-c
                      , containers
