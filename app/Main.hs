@@ -10,4 +10,8 @@ main = do
   args <- getArgs
   when (length args /= 1) usage
   let [fn] = args
-  parseMyFile fn >>= printMyGlobal
+  gglobals <- parseMyFile fn
+  mapM_ (\a -> do
+            print . fst $ a
+            printMyGlobal . snd $ a) gglobals
+  return ()
