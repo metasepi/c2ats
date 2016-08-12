@@ -6,8 +6,8 @@ import Lib
 
 main :: IO ()
 main = do
-  let usage = error "Usage: c2ats C_CODE_PATH"
+  let usage = error "Usage: c2ats C_FILEPATH"
   args <- getArgs
   when (length args /= 1) usage
   let [fn] = args
-  parseMyFile fn >>= printMyAST
+  parseMyFile fn >>= printMyGlobal
