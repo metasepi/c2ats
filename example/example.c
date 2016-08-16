@@ -1,5 +1,7 @@
-#include <sys/dir.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <sys/dir.h>
 /* example.c */
 /* (tentative) definitions */
 static c; extern c;

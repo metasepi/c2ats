@@ -17,9 +17,11 @@ library
   hs-source-dirs:      src
   exposed-modules:     Language.C2ATS
                      , Language.C2ATS.Parser
+                     , Language.C2ATS.Pretty
   build-depends:       base >= 4.7
-                     , language-c
+                     , language-c >= 0.5.0
                      , containers
+                     , pretty
   default-language:    Haskell2010
 
 executable c2ats

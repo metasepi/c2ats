@@ -1,7 +1,6 @@
 module Language.C2ATS.Parser
        ( parseMyFile
-       , printMyAST
-       , printMyGlobal
+       , GlobalDecls
        ) where
 
 import System.IO
@@ -25,12 +24,6 @@ parseMyFile input_file = do
   where
     checkResult :: (Show a) => String -> (Either a b) -> IO b
     checkResult label = either (error . (label++) . show) return
-
-printMyAST :: CTranslUnit -> IO ()
-printMyAST = print . pretty
-
-printMyGlobal :: GlobalDecls -> IO ()
-printMyGlobal = print . pretty
 
 groupGlobalsBySourceFile :: GlobalDecls -> [(FilePath, GlobalDecls)]
 groupGlobalsBySourceFile gmap = map (\a -> (a, fltr a gmap)) fAll
