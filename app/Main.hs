@@ -10,7 +10,6 @@ main = do
   args <- getArgs
   when (length args /= 1) usage
   let [fn] = args
-  gglobals <- parseMyFile fn
-  mapM_ (\a -> do
-            print . fst $ a
-            printMyGlobal . snd $ a) gglobals
+  (files, globals) <- parseMyFile fn
+  let fglobal = sortFlatGlobal . flatGlobal $ globals
+  print $ myPrettyGlobal fglobal

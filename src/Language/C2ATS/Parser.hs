@@ -6,34 +6,22 @@ module Language.C2ATS.Parser
 import System.IO
 import Control.Arrow      hiding ((<+>))
 import Data.List
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Language.C
 import Language.C.Analysis
 import Language.C.System.GCC
-import Language.C.Data.Node
 
-parseMyFile :: FilePath -> IO [(FilePath, GlobalDecls)]
+parseMyFile :: FilePath -> IO ([FilePath], GlobalDecls)
 parseMyFile input_file = do
   let compiler = newGCC "gcc"
       opts = []
   ast <- parseCFile compiler Nothing opts input_file >>= checkResult "[parsing]"
   (globals, warnings) <- (runTrav_ >>> checkResult "[analysis]") $ analyseAST ast
   mapM_ (hPutStrLn stderr . show) warnings
-  return $ groupGlobalsBySourceFile globals
+  return (filesInAST ast, globals)
   where
     checkResult :: (Show a) => String -> (Either a b) -> IO b
     checkResult label = either (error . (label++) . show) return
 
-groupGlobalsBySourceFile :: GlobalDecls -> [(FilePath, GlobalDecls)]
-groupGlobalsBySourceFile gmap = map (\a -> (a, fltr a gmap)) fAll
-  where
-    d2f :: DeclEvent -> FilePath
-    d2f = maybe "" id . fileOfNode
-    fObjs, fTags, fTypeDefs, fAll :: [FilePath]
-    fObjs     = map (d2f . DeclEvent)    $ Map.elems (gObjs gmap)
-    fTags     = map (d2f . TagEvent)     $ Map.elems (gTags gmap)
-    fTypeDefs = map (d2f . TypeDefEvent) $ Map.elems (gTypeDefs gmap)
-    fAll      = delete "" . nub $ fObjs ++ fTags ++ fTypeDefs
-    fltr :: FilePath -> GlobalDecls -> GlobalDecls
-    fltr f = filterGlobalDecls ((== f) . d2f)
+filesInAST :: CTranslUnit -> [FilePath]
+filesInAST (CTranslUnit ds n) =
+  delete "" . nub $ map (maybe "" id) (fileOfNode n : map fileOfNode ds)
