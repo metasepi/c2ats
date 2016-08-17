@@ -12,4 +12,8 @@ main = do
   let [fn] = args
   (files, globals) <- parseMyFile fn
   let fglobal = sortFlatGlobal . flatGlobal $ globals
+  -- xxx Pick up typedef using pointer
+  -- xxx Filter builtin
+  -- xxx Split with files
   print $ atsPrettyGlobal fglobal
+  -- xxx Create sats files
