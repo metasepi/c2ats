@@ -12,4 +12,4 @@ main = do
   let [fn] = args
   (files, globals) <- parseMyFile fn
   let fglobal = sortFlatGlobal . flatGlobal $ globals
-  print $ myPrettyGlobal fglobal
+  print $ atsPrettyGlobal fglobal
