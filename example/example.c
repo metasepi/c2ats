@@ -17,6 +17,12 @@ void* match(s_ix, l_ix, pat)
 /* typedefs and structs */
 typedef struct s { struct { char chr; double dbl; } x,*y; } __attribute__((packed)) S;
 struct t { int a; };
+struct {
+  unsigned int a : 10;
+  unsigned int b : 8;
+  unsigned int c : 12;
+  unsigned int d : 2;
+};
 S f();
 static g(S a)  { return 0; }  
 int main() { printf("%d",sizeof(DIR)); }

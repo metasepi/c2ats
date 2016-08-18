@@ -56,7 +56,7 @@ class AtsPretty p where
 
 instance AtsPretty FlatGlobalDecl where
   atsPretty m (FGObj  d) = pretty d -- xxx not yet
-  atsPretty m (FGTag  d) = pretty d -- xxx not yet
+  atsPretty m (FGTag  d) = atsPretty m d
   atsPretty m (FGType d) = atsPretty m d
 
 instance AtsPretty TypeDef where
@@ -108,7 +108,7 @@ instance AtsPretty CompTyKind where
   atsPretty m UnionTag  = text "union"
 
 instance AtsPretty SUERef where
-  atsPretty m (AnonymousRef name) = text $ "_c2ats_anon_" ++ show (nameId name)
+  atsPretty m (AnonymousRef name) = text "_c2ats_anon_" <> int (nameId name)
   atsPretty m (NamedRef ident) = atsPretty m ident
 
 instance AtsPretty EnumTypeRef where
@@ -131,3 +131,42 @@ instance AtsPretty FunType where
 instance AtsPretty ParamDecl where
   atsPretty m (ParamDecl (VarDecl _ _ ty) _)      = atsPretty m ty
   atsPretty m (AbstractParamDecl (VarDecl _ _ ty) _) = atsPretty m ty
+
+instance AtsPretty TagDef where
+  atsPretty m (CompDef compty) = atsPretty m compty
+  atsPretty m (EnumDef enumty) = empty -- ATS does not have enum
+
+instance AtsPretty CompType where
+  atsPretty m (CompType sue_ref tag members attrs node) =
+    tdef <> ext sue_ref <> text "\" of {" $+$ (nest 2 $ vcat (atsPretty' members)) $+$ text "}"
+    where
+      tdef = text "typedef" <+> atsPretty m tag <> atsPretty m sue_ref <+> text "= $extype_struct\""
+      ext (NamedRef ident) = atsPretty m tag <+> pretty ident
+      ext (AnonymousRef _) = atsPretty m tag <+> text "{" <+> hcat (map (cPretty m) members) <> text "}"
+      atsPretty' :: [MemberDecl] -> [Doc]
+      atsPretty' [] = [empty]
+      atsPretty' [x] = [atsPretty m x]
+      atsPretty' (x:xs) = atsPretty m x <> text "," : atsPretty' xs
+
+instance AtsPretty MemberDecl where -- Ignore bit field
+  atsPretty m (MemberDecl (VarDecl name declattrs ty) _ _) =
+    pretty declattrs <+> pretty name <+> text "=" <+> atsPretty m ty
+  atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
+
+class CPretty p where
+  cPretty     :: Map Ident Type -> p -> Doc
+  cPrettyPrec :: Map Ident Type -> Int -> p -> Doc
+  cPretty     m   = cPrettyPrec m 0
+  cPrettyPrec m _ = cPretty m
+
+instance CPretty MemberDecl where
+  cPretty m (MemberDecl (VarDecl name declattrs ty) bitfield _) =
+    pretty declattrs <+> ft ty <+> pretty name <> fs ty <+>
+    (maybe empty (\bf -> text ":" <+> pretty bf) bitfield) <> text "; "
+    where
+      ft (ArrayType t _ q _) = pretty q <+> pretty t
+      ft t = pretty t
+      fs (ArrayType _ s _ _) = brackets $ atsPretty m s
+      fs t = empty
+  cPretty m (AnonBitField ty bitfield_sz _) =
+    pretty ty <+> text ":" <+> pretty bitfield_sz <> text "; "
