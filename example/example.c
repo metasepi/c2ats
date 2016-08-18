@@ -23,6 +23,24 @@ struct {
   unsigned int c : 12;
   unsigned int d : 2;
 };
+struct {
+  void *(*traverse_func)(int a[10][20], void *f(int i));
+  int a[2][3][4];
+  int *b;
+  struct t *c;
+};
 S f();
-static g(S a)  { return 0; }  
-int main() { printf("%d",sizeof(DIR)); }
+static g(S a)  { return 0; }
+struct t2 {
+  int a;
+  struct {
+    int b;
+    struct {
+      int c;
+    } d;
+  } e;
+};
+struct {
+  void (*f)(int[2][3], struct t2);
+};
+int main() { printf("%d\n",1); }

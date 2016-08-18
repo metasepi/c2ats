@@ -37,20 +37,20 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
     theTypeDefs = Map.assocs $ Map.map FGType $ Map.mapKeys NamedRef $ gTypeDefs gmap
 
 sortFlatGlobal :: [(SUERef, FlatGlobalDecl)] -> [(SUERef, FlatGlobalDecl)]
-sortFlatGlobal = sortBy order
+sortFlatGlobal = sortBy order -- xxx swap anon {struct,union}
   where
     order :: (SUERef, FlatGlobalDecl) -> (SUERef, FlatGlobalDecl) -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
 
 atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
-atsPrettyGlobal = vcat . map f
+atsPrettyGlobal m = vcat . map f $ m
   where
     f :: (SUERef, FlatGlobalDecl) -> Doc
-    f (_, d) = atsPretty Map.empty d
+    f (_, d) = atsPretty (Map.fromList m) d
 
 class AtsPretty p where
-  atsPretty     :: Map Ident Type -> p -> Doc
-  atsPrettyPrec :: Map Ident Type -> Int -> p -> Doc
+  atsPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
+  atsPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
   atsPretty     m   = atsPrettyPrec m 0
   atsPrettyPrec m _ = atsPretty m
 
@@ -154,19 +154,94 @@ instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
 
 class CPretty p where
-  cPretty     :: Map Ident Type -> p -> Doc
-  cPrettyPrec :: Map Ident Type -> Int -> p -> Doc
+  cPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
+  cPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
   cPretty     m   = cPrettyPrec m 0
   cPrettyPrec m _ = cPretty m
 
+subscriptArray :: Map SUERef FlatGlobalDecl -> Type -> Doc
+subscriptArray m (ArrayType t s _ _) = (brackets $ atsPretty m s) <> subscriptArray m t
+subscriptArray m t = empty
+
 instance CPretty MemberDecl where
+  cPretty m (MemberDecl (VarDecl name _ (PtrType (FunctionType (FunType ty para _) _) _ _)) _ _) =
+    cPretty m ty <+> text "(*" <> pretty name <> text ")(" <> hcat (punctuate (text ", ") $ map (cPretty m) para) <> text ")" <> text "; "
   cPretty m (MemberDecl (VarDecl name declattrs ty) bitfield _) =
-    pretty declattrs <+> ft ty <+> pretty name <> fs ty <+>
+    pretty declattrs <+> cPretty m ty <+> pretty name <> subscriptArray m ty <+>
     (maybe empty (\bf -> text ":" <+> pretty bf) bitfield) <> text "; "
-    where
-      ft (ArrayType t _ q _) = pretty q <+> pretty t
-      ft t = pretty t
-      fs (ArrayType _ s _ _) = brackets $ atsPretty m s
-      fs t = empty
   cPretty m (AnonBitField ty bitfield_sz _) =
-    pretty ty <+> text ":" <+> pretty bitfield_sz <> text "; "
+    cPretty m ty <+> text ":" <+> pretty bitfield_sz <> text "; "
+
+instance CPretty Type where
+  cPretty m (DirectType t _ _)  = cPretty m t
+  cPretty m (PtrType t _ _)     = cPretty m t <+> text "*"
+  cPretty m (ArrayType t _ _ _) = cPretty m t
+  cPretty m (TypeDefType t _ _) = cPretty m t
+  -- Do not print function type directly
+
+instance CPretty TypeName where
+  cPretty m TyVoid                       = text "void"
+  cPretty m (TyComp (CompTypeRef s c _)) = cPretty m c <+> cPretty m s
+  cPretty m (TyEnum e)                   = cPretty m e
+  cPretty m (TyComplex _)  = trace "*** TyComplex type is not suppored" $ text "/* Not support TyComplex */"
+  cPretty m (TyBuiltin _)  = trace "*** TyBuiltin type is not suppored" $ text "/* Not support TyBuiltin */"
+  cPretty m (TyIntegral t) = f t
+    where
+      f TyBool    = text "bool"
+      f TyChar    = text "char"
+      f TySChar   = text "signed char"
+      f TyUChar   = text "unsigned char"
+      f TyShort   = text "short"
+      f TyUShort  = text "unsigned short"
+      f TyInt     = text "int"
+      f TyUInt    = text "unsigned int"
+      f TyInt128  = text "int128_t"
+      f TyUInt128 = text "uint128_t"
+      f TyLong    = text "long int"
+      f TyULong   = text "unsigned long int"
+      f TyLLong   = text "long long int"
+      f TyULLong  = text "unsigned long long int"
+  cPretty m (TyFloating t) = f t
+    where
+      f TyFloat   = text "float"
+      f TyDouble  = text "double"
+      f TyLDouble = text "long double"
+
+instance CPretty CompTyKind where
+  cPretty m StructTag = text "struct"
+  cPretty m UnionTag  = text "union"
+
+instance CPretty SUERef where
+  cPretty m (AnonymousRef name) = text "$" <> int (nameId name)
+  cPretty m (NamedRef ident) = cPretty m ident
+
+instance CPretty EnumTypeRef where
+  cPretty m (EnumTypeRef _ _ ) = text "int" -- ATS does not have enum
+
+instance CPretty Ident where
+  cPretty m (Ident s _ _) = text s
+
+instance CPretty TypeDefRef where
+  cPretty m (TypeDefRef ident _ _) = cPretty m ident
+
+prettyCParamFun :: Map SUERef FlatGlobalDecl -> Ident -> Type -> [ParamDecl] -> Doc
+prettyCParamFun m n ty para =
+  cPretty m ty <+> cPretty m n <> parens (hcat $ punctuate (text ", ") $ map (cPretty m) para)
+prettyCParam :: Map SUERef FlatGlobalDecl -> Ident -> Type -> Doc
+prettyCParam m n ty = cPretty m ty <+> cPretty m n <> subscriptArray m ty
+prettyCParamNoname :: Map SUERef FlatGlobalDecl -> Type -> Doc
+prettyCParamNoname m ty = cPretty m ty <> subscriptArray m ty
+
+instance CPretty ParamDecl where
+  cPretty m (ParamDecl (VarDecl (VarName n _) _ (FunctionType (FunType ty para _) _)) _) =
+    prettyCParamFun m n ty para
+  cPretty m (AbstractParamDecl (VarDecl (VarName n _) _ (FunctionType (FunType ty para _) _)) _) =
+    prettyCParamFun m n ty para
+  cPretty m (ParamDecl (VarDecl (VarName n _) _ ty) _) =
+    prettyCParam m n ty
+  cPretty m (AbstractParamDecl (VarDecl (VarName n _) _ ty) _) =
+    prettyCParam m n ty
+  cPretty m (ParamDecl (VarDecl NoName _ ty) _) =
+    prettyCParamNoname m ty
+  cPretty m (AbstractParamDecl (VarDecl NoName _ ty) _) =
+    prettyCParamNoname m ty
