@@ -152,10 +152,14 @@ instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
 
 instance AtsPretty IdentDecl where
-  atsPretty m (Declaration d) = pretty d -- xxx not yet
-  atsPretty m (ObjectDef o)   = pretty o -- xxx not yet
-  atsPretty m (FunctionDef (FunDef (VarDecl ident _ ty) _ _)) =
-    text "fun" <+> pretty ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#\""
+  atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
+    text "fun" <+> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+  atsPretty m (Declaration d) =
+    trace "*** Non-function Declaration is not suppored" $ text "(* Not support non-function Declaration *)"
+  atsPretty m (ObjectDef o) =
+    trace "*** ObjectDef is not suppored" $ text "(* Not support ObjectDef *)"
+  atsPretty m (FunctionDef (FunDef (VarDecl (VarName ident _) _ ty) _ _)) =
+    text "fun" <+> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
     text "#define" <+> pretty i <+> pretty e
 
