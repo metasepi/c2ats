@@ -48,6 +48,7 @@ atsPrettyGlobal m = vcat . map f $ m
     f :: (SUERef, FlatGlobalDecl) -> Doc
     f (_, d) = atsPretty (Map.fromList m) d
 
+------------------------------------------------------------------------------------------
 class AtsPretty p where
   atsPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
   atsPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
@@ -55,7 +56,7 @@ class AtsPretty p where
   atsPrettyPrec m _ = atsPretty m
 
 instance AtsPretty FlatGlobalDecl where
-  atsPretty m (FGObj  d) = pretty d -- xxx not yet
+  atsPretty m (FGObj  d) = atsPretty m d
   atsPretty m (FGTag  d) = atsPretty m d
   atsPretty m (FGType d) = atsPretty m d
 
@@ -125,8 +126,7 @@ instance AtsPretty FunType where
   atsPretty m (FunTypeIncomplete _) = trace "*** FunTypeIncomplete is not suppored" $ text "(* Not support FunTypeIncomplete *)"
   atsPretty m (FunType t ps _) = text "(" <> args <> text ")" <+> text "->" <+> atsPretty m t
     where
-      x:xs = map (atsPretty m) ps
-      args = hcat $ x : map (\a -> text "," <+> a) xs
+      args = hcat $ punctuate (text ", ") $ map (atsPretty m) ps
 
 instance AtsPretty ParamDecl where
   atsPretty m (ParamDecl (VarDecl _ _ ty) _)      = atsPretty m ty
@@ -144,15 +144,22 @@ instance AtsPretty CompType where
       ext (NamedRef ident) = atsPretty m tag <+> pretty ident
       ext (AnonymousRef _) = atsPretty m tag <+> text "{" <+> hcat (map (cPretty m) members) <> text "}"
       atsPretty' :: [MemberDecl] -> [Doc]
-      atsPretty' [] = [empty]
-      atsPretty' [x] = [atsPretty m x]
-      atsPretty' (x:xs) = atsPretty m x <> text "," : atsPretty' xs
+      atsPretty' md = punctuate (text ", ") $ map (atsPretty m) md
 
 instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (MemberDecl (VarDecl name declattrs ty) _ _) =
     pretty declattrs <+> pretty name <+> text "=" <+> atsPretty m ty
   atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
 
+instance AtsPretty IdentDecl where
+  atsPretty m (Declaration d) = pretty d -- xxx not yet
+  atsPretty m (ObjectDef o)   = pretty o -- xxx not yet
+  atsPretty m (FunctionDef (FunDef (VarDecl ident _ ty) _ _)) =
+    text "fun" <+> pretty ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#\""
+  atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
+    text "#define" <+> pretty i <+> pretty e
+
+------------------------------------------------------------------------------------------
 class CPretty p where
   cPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
   cPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc

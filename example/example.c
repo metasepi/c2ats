@@ -40,7 +40,12 @@ struct t2 {
     } d;
   } e;
 };
+enum e2 {
+  E2_A,
+  E2_B,
+  E2_C
+};
 struct {
-  void (*f)(int[2][3], struct t2);
+  void (*f)(enum e2, int[2][3], struct t2);
 };
 int main() { printf("%d\n",1); }
