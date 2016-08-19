@@ -42,9 +42,15 @@ sortFlatGlobal = sortBy order -- xxx swap anon {struct,union}
     order :: (SUERef, FlatGlobalDecl) -> (SUERef, FlatGlobalDecl) -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
 
+predef_c2ats_gnuc_va_list = text "predef_c2ats_gnuc_va_list"
+predef_c2ats_any          = text "predef_c2ats_any"
+
 atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
-atsPrettyGlobal m = vcat . map f $ m
+atsPrettyGlobal m = predef $+$ (vcat . map f $ m)
   where
+    predef =
+      text "abst@ype" <+> predef_c2ats_gnuc_va_list <+> text "= $extype\"__gnuc_va_list\"" $+$ -- gcc specific
+      text "abst@ype" <+> predef_c2ats_any -- can't use in ATS
     f :: (SUERef, FlatGlobalDecl) -> Doc
     f (_, d) = atsPretty (Map.fromList m) d
 
@@ -80,8 +86,11 @@ instance AtsPretty TypeName where
   atsPretty m TyVoid                       = text "void"
   atsPretty m (TyComp (CompTypeRef s c _)) = atsPretty m c <> atsPretty m s
   atsPretty m (TyEnum e)                   = atsPretty m e
-  atsPretty m (TyComplex _)  = trace "*** TyComplex type is not suppored" $ text "(* Not support TyComplex *)"
-  atsPretty m (TyBuiltin _)  = trace "*** TyBuiltin type is not suppored" $ text "(* Not support TyBuiltin *)"
+  atsPretty m (TyComplex _) =
+    let msg = text "Not support TyComplex"
+    in trace ("*** " ++ show msg) $ text "(*" <+> msg <+> text "*)"
+  atsPretty m (TyBuiltin TyVaList) = predef_c2ats_gnuc_va_list
+  atsPretty m (TyBuiltin TyAny)    = predef_c2ats_any
   atsPretty m (TyIntegral t) = f t
     where
       f TyBool    = text "bool"
@@ -194,8 +203,13 @@ instance CPretty TypeName where
   cPretty m TyVoid                       = text "void"
   cPretty m (TyComp (CompTypeRef s c _)) = cPretty m c <+> cPretty m s
   cPretty m (TyEnum e)                   = cPretty m e
-  cPretty m (TyComplex _)  = trace "*** TyComplex type is not suppored" $ text "/* Not support TyComplex */"
-  cPretty m (TyBuiltin _)  = trace "*** TyBuiltin type is not suppored" $ text "/* Not support TyBuiltin */"
+  cPretty m t@(TyComplex _) =
+    let msg = text "Not support TyComplex"
+    in trace ("*** " ++ show msg) $ text "/*" <+> msg <+> text "*/"
+  cPretty m (TyBuiltin TyVaList) = text "__gnuc_va_list" -- gcc specific
+  cPretty m (TyBuiltin TyAny) =
+    let msg = text "Not support TyBuiltin TyAny"
+    in trace ("*** " ++ show msg) $ text "2/*" <+> msg <+> text "*/"
   cPretty m (TyIntegral t) = f t
     where
       f TyBool    = text "bool"
