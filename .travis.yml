@@ -1,11 +1,14 @@
 sudo: required
 dist: trusty
 
-language: haskell
-
-ghc:
-  - 7.10
+before_install:
+  - date
+  - sudo apt-get -qq -y install haskell-platform cabal-install libghc-language-c-dev
 
 script:
+  - cabal update
   - cabal install
   - c2ats new example/complex/example.c
+
+after_script:
+  - date
