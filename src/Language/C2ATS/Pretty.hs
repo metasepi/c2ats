@@ -373,4 +373,3 @@ instance CPretty ParamDecl where
     prettyCParamNoname m ty
   cPretty m (AbstractParamDecl (VarDecl NoName _ ty) _) =
     prettyCParamNoname m ty
-

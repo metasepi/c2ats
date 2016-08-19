@@ -3,7 +3,7 @@ dist: trusty
 
 before_install:
   - date
-  - sudo apt-get -qq -y install haskell-platform cabal-install libghc-language-c-dev
+  - sudo apt-get -qq -y install haskell-platform cabal-install
 
 script:
   - cabal update
