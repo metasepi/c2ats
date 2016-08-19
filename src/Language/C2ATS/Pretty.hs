@@ -153,7 +153,7 @@ instance AtsPretty CompType where
       ext (NamedRef ident) = atsPretty m tag <+> pretty ident
       ext (AnonymousRef _) = atsPretty m tag <+> text "{" <+> hcat (map (cPretty m) members) <> text "}"
       atsPretty' :: [MemberDecl] -> [Doc]
-      atsPretty' md = punctuate (text ", ") $ map (atsPretty m) md
+      atsPretty' md = punctuate (text ",") $ delete empty . map (atsPretty m) $ md
 
 instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (MemberDecl (VarDecl name declattrs ty) _ _) =
