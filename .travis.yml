@@ -4,9 +4,10 @@ dist: trusty
 before_install:
   - date
   - sudo apt-get -qq -y install haskell-platform cabal-install
+  - cabal update
+  - export PATH=${HOME}/.cabal/bin:${PATH}
 
 script:
-  - cabal update
   - cabal install
   - c2ats new example/complex/example.c
 
