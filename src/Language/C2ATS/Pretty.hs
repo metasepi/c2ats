@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 module Language.C2ATS.Pretty
        ( atsPrettyGlobal
        , flatGlobal
@@ -126,7 +127,7 @@ instance AtsPretty EnumTypeRef where
 
 instance AtsPretty ArraySize where
   atsPretty m (UnknownArraySize _) = text "0" -- ATS does not support UnknownArraySize
-  atsPretty m (ArraySize _ e)      = pretty e
+  atsPretty m (ArraySize _ e)      = atsPretty m e
 
 instance AtsPretty TypeDefRef where
   atsPretty m (TypeDefRef ident _ _) = atsPretty m ident
@@ -171,6 +172,106 @@ instance AtsPretty IdentDecl where
     text "fun fun" <> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
     text "#define enum" <> atsPretty m i <+> pretty e
+
+maybeP :: (p -> Doc) -> Maybe p -> Doc
+maybeP = maybe empty
+
+identP :: Ident -> Doc
+identP = text . identToString
+
+parenPrec :: Int -> Int -> Doc -> Doc
+parenPrec prec prec2 t = if prec <= prec2 then t else parens t
+
+instance AtsPretty CExpr where
+  atsPrettyPrec m p (CComma exprs _) =
+    parenPrec p (-1) $ hsep (punctuate comma (map (atsPrettyPrec m 2) exprs))
+  atsPrettyPrec m p (CAssign op expr1 expr2 _) =
+    parenPrec p 2 $ atsPrettyPrec m 3 expr1 <+> pretty op <+> atsPrettyPrec m 2 expr2
+  atsPrettyPrec m p (CCond expr1 expr2 expr3 _) =
+    parenPrec p 2 $ atsPrettyPrec m 4 expr1 <+> text "?" -- NB: assignment only has a higher precedence if cond is on the rhs
+    <+> maybeP pretty expr2 <+> text ":" <+> atsPrettyPrec m 4 expr3
+  atsPrettyPrec m p (CBinary op expr1 expr2 _) =
+    let prec = binPrec op
+    in  parenPrec p prec $ atsPrettyPrec m prec expr1
+        <+> pretty op <+> atsPrettyPrec m (prec + 1) expr2
+  atsPrettyPrec m p (CCast decl expr _) =
+    parenPrec p 25 $ text "(" <> pretty decl <> text ")"
+    <+> atsPrettyPrec m 25 expr
+  atsPrettyPrec m p (CUnary CPostIncOp expr _) =
+    parenPrec p 26 $ atsPrettyPrec m 26 expr <> text "++"
+  atsPrettyPrec m p (CUnary CPostDecOp expr _) =
+    parenPrec p 26 $ atsPrettyPrec m 26 expr <> text "--"
+  atsPrettyPrec m p (CUnary op expr@(CUnary _ _ _) _) =
+    --                             parens aren't necessary, but look nicer imho
+    parenPrec p 25 $ pretty op <+> parens (atsPrettyPrec m 25 expr)
+  atsPrettyPrec m p (CUnary op expr _) =
+    parenPrec p 25 $ pretty op <> atsPrettyPrec m 25 expr
+  atsPrettyPrec m p (CSizeofExpr expr _) =
+    parenPrec p 25 $ text "sizeof" <> parens (pretty expr)
+  atsPrettyPrec m p (CSizeofType decl _) =
+    parenPrec p 25 $ text "sizeof" <> parens (atsPretty m decl)
+  atsPrettyPrec m p (CAlignofExpr expr _) =
+    parenPrec p 25 $ text "__alignof" <> parens (pretty expr)
+  atsPrettyPrec m p (CAlignofType decl _) =
+    parenPrec p 25 $ text "__alignof" <> parens (pretty decl)
+  atsPrettyPrec m p (CComplexReal expr _) =
+    parenPrec p 25 $ text "__real" <+> atsPrettyPrec m 25 expr
+  atsPrettyPrec m p (CComplexImag expr _) =
+    parenPrec p 25 $ text "__imag" <+> atsPrettyPrec m 25 expr
+  atsPrettyPrec m p (CIndex expr1 expr2 _) =
+    parenPrec p 26 $ atsPrettyPrec m 26 expr1
+    <> text "[" <> pretty expr2 <> text "]"
+  atsPrettyPrec m p (CCall expr args _) =
+    parenPrec p 30 $ atsPrettyPrec m 30 expr <> text "("
+    <> (sep . punctuate comma . map pretty) args <> text ")"
+  atsPrettyPrec m p (CMember expr ident deref _) =
+    parenPrec p 26 $ atsPrettyPrec m 26 expr
+    <> text (if deref then "->" else ".") <> identP ident
+  atsPrettyPrec m _p (CVar ident _) = identP ident
+  atsPrettyPrec m _p (CConst constant) = pretty constant
+  atsPrettyPrec m _p (CCompoundLit decl initl _) =
+    parens (pretty decl) <+> (braces . hsep . punctuate comma) (map p initl) where
+      p ([], initializer)           = pretty initializer
+      p (mems, initializer) = hcat (punctuate (text ".") (map pretty mems)) <+> text "=" <+> pretty initializer
+  atsPrettyPrec m _p (CStatExpr stat _) =
+    text "(" <> pretty stat <> text ")"
+  atsPrettyPrec m _p (CLabAddrExpr ident _) = text "&&" <> identP ident
+  atsPrettyPrec m _p (CBuiltinExpr builtin) = pretty builtin
+
+binPrec :: CBinaryOp -> Int
+binPrec CMulOp = 20
+binPrec CDivOp = 20
+binPrec CRmdOp = 20
+binPrec CAddOp = 19
+binPrec CSubOp = 19
+binPrec CShlOp = 18
+binPrec CShrOp = 18
+binPrec CLeOp  = 17
+binPrec CGrOp  = 17
+binPrec CLeqOp = 17
+binPrec CGeqOp = 17
+binPrec CEqOp  = 16
+binPrec CNeqOp = 16
+binPrec CAndOp = 15
+binPrec CXorOp = 14
+binPrec COrOp  = 13
+binPrec CLndOp = 12
+binPrec CLorOp = 11
+
+instance AtsPretty CDecl where
+ atsPretty m (CDecl [CTypeSpec t] _ _)= atsPretty m t
+ atsPretty m t = pretty t
+
+instance AtsPretty CTypeSpec where
+  atsPretty m (CVoidType _)        = text "ptr"
+  atsPretty m (CCharType _)        = text "char"
+  atsPretty m (CShortType _)       = text "short"
+  atsPretty m (CIntType _)         = text "int"
+  atsPretty m (CFloatType _)       = text "float"
+  atsPretty m (CDoubleType _)      = text "double"
+  atsPretty m (CBoolType _)        = text "bool"
+  atsPretty m (CEnumType enum _)   = text "int"
+  atsPretty m (CTypeDef ident _)   = identP ident
 
 ------------------------------------------------------------------------------------------
 class CPretty p where
