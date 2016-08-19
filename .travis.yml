@@ -1,0 +1,8 @@
+language: haskell
+
+ghc:
+  - 7.10
+
+script:
+  - cabal install
+  - c2ats new example/complex/example.c
