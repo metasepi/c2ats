@@ -29,8 +29,10 @@ struct {
   int *b;
   struct t *c;
 };
+typedef S T;
 S f();
 static g(S a)  { return 0; }
+void *h(S f(S[3]));
 struct t2 {
   int a;
   struct {

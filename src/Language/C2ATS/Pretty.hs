@@ -62,7 +62,7 @@ instance AtsPretty FlatGlobalDecl where
 
 instance AtsPretty TypeDef where
   atsPretty m (TypeDef ident ty _ _) =
-    text "typedef" <+> atsPretty m ident <+> text "=" <+> atsPretty m ty
+    text "typedef type" <> atsPretty m ident <+> text "=" <+> atsPretty m ty
 
 instance AtsPretty Ident where
   atsPretty m (Ident s _ _) = text "_c2ats_" <> text s
@@ -74,7 +74,7 @@ instance AtsPretty Type where
   atsPretty m (PtrType t _ _)     = text "cPtr0(" <> atsPretty m t <> text ")"
   atsPretty m (ArrayType t s _ _) = text "@[" <> atsPretty m t <> text "][" <> atsPretty m s <> text "]"
   atsPretty m (FunctionType f _)  = atsPretty m f
-  atsPretty m (TypeDefType t _ _) = atsPretty m t
+  atsPretty m (TypeDefType t _ _) = text "type" <> atsPretty m t
 
 instance AtsPretty TypeName where
   atsPretty m TyVoid                       = text "void"
@@ -123,7 +123,7 @@ instance AtsPretty TypeDefRef where
   atsPretty m (TypeDefRef ident _ _) = atsPretty m ident
 
 instance AtsPretty FunType where
-  atsPretty m (FunTypeIncomplete _) = trace "*** FunTypeIncomplete is not suppored" $ text "(* Not support FunTypeIncomplete *)"
+  atsPretty m (FunTypeIncomplete t) = text "() ->" <+> atsPretty m t
   atsPretty m (FunType t ps _) = text "(" <> args <> text ")" <+> text "->" <+> atsPretty m t
     where
       args = hcat $ punctuate (text ", ") $ map (atsPretty m) ps
@@ -153,13 +153,13 @@ instance AtsPretty MemberDecl where -- Ignore bit field
 
 instance AtsPretty IdentDecl where
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
-    text "fun" <+> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+    text "fun fun" <> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (Declaration d) =
     trace "*** Non-function Declaration is not suppored" $ text "(* Not support non-function Declaration *)"
   atsPretty m (ObjectDef o) =
     trace "*** ObjectDef is not suppored" $ text "(* Not support ObjectDef *)"
   atsPretty m (FunctionDef (FunDef (VarDecl (VarName ident _) _ ty) _ _)) =
-    text "fun" <+> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+    text "fun fun" <> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
     text "#define" <+> pretty i <+> pretty e
 
@@ -256,3 +256,4 @@ instance CPretty ParamDecl where
     prettyCParamNoname m ty
   cPretty m (AbstractParamDecl (VarDecl NoName _ ty) _) =
     prettyCParamNoname m ty
+
