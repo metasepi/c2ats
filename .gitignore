@@ -1,5 +1,6 @@
 *_dats.c
 .stack-work/
 a.out
+dist/
 example.sats
 test_prog
