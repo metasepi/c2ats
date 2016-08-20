@@ -4,6 +4,7 @@ module Language.C2ATS.Pretty
        , flatGlobal
        , sortFlatGlobal
        , splitFlatGlobal
+       , preDefineGlobal
        ) where
 
 import Data.List
@@ -60,14 +61,16 @@ splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths
 predef_c2ats_gnuc_va_list = text "predef_c2ats_gnuc_va_list"
 predef_c2ats_any          = text "predef_c2ats_any"
 
+preDefineGlobal :: Doc
+preDefineGlobal =
+  text "abst@ype" <+> predef_c2ats_gnuc_va_list <+> text "= $extype\"__gnuc_va_list\"" $+$ -- gcc specific
+  text "abst@ype" <+> predef_c2ats_any $+$ -- can't use in ATS
+  text "abst@ype short = $extype\"short\"" $+$
+  text "abst@ype ushort = $extype\"ushort\""
+
 atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
-atsPrettyGlobal m = predef $+$ (vcat . map f $ m)
+atsPrettyGlobal m = (vcat . map f $ m)
   where
-    predef =
-      text "abst@ype" <+> predef_c2ats_gnuc_va_list <+> text "= $extype\"__gnuc_va_list\"" $+$ -- gcc specific
-      text "abst@ype" <+> predef_c2ats_any $+$ -- can't use in ATS
-      text "abst@ype short = $extype\"short\"" $+$
-      text "abst@ype ushort = $extype\"ushort\""
     f :: (SUERef, FlatGlobalDecl) -> Doc
     f (_, d) = atsPretty (Map.fromList m) d
 
