@@ -63,8 +63,8 @@ predef_c2ats_any          = text "predef_c2ats_any"
 
 preDefineGlobal :: Doc
 preDefineGlobal =
-  text "abst@ype" <+> predef_c2ats_gnuc_va_list <+> text "= $extype\"__gnuc_va_list\"" $+$ -- gcc specific
-  text "abst@ype" <+> predef_c2ats_any -- can't use in ATS
+  text "abst@ype" <+> predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
+  text "abst@ype" <+> predef_c2ats_any              -- can't use in ATS
 
 atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
 atsPrettyGlobal m = (vcat . map f $ m)
