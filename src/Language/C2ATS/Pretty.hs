@@ -3,6 +3,7 @@ module Language.C2ATS.Pretty
        ( atsPrettyGlobal
        , flatGlobal
        , sortFlatGlobal
+       , splitFlatGlobal
        ) where
 
 import Data.List
@@ -42,6 +43,19 @@ sortFlatGlobal = sortBy order -- xxx swap anon {struct,union}
   where
     order :: (SUERef, FlatGlobalDecl) -> (SUERef, FlatGlobalDecl) -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
+
+splitFlatGlobal :: [(SUERef, FlatGlobalDecl)] -> [(Maybe FilePath, [(SUERef, FlatGlobalDecl)])]
+splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths m
+  where
+    f :: String -> Maybe FilePath
+    f "<no file>"  = Nothing
+    f "<builtin>"  = Nothing
+    f "<internal>" = Nothing
+    f xs           = Just $ filter (\c -> c /= '"' && c /= ':' && c /= '(') . head . words $ xs
+    getFile :: (SUERef, FlatGlobalDecl) -> Maybe FilePath
+    getFile = f . show . posOfNode . nodeInfo . snd
+    filePaths :: [(SUERef, FlatGlobalDecl)] -> [Maybe FilePath]
+    filePaths = nub . map getFile
 
 predef_c2ats_gnuc_va_list = text "predef_c2ats_gnuc_va_list"
 predef_c2ats_any          = text "predef_c2ats_any"

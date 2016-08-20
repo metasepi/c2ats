@@ -12,8 +12,8 @@ main = do
   let cmd:[fn] = args
   when (cmd /= "new") usage
   (files, globals) <- parseMyFile fn
-  let fglobal = sortFlatGlobal . flatGlobal $ globals
+  let fglobal = splitFlatGlobal . sortFlatGlobal . flatGlobal $ globals
   -- xxx Pick up typedef using pointer
   -- xxx Split with files
-  print $ atsPrettyGlobal fglobal
+  mapM_ (\(f,g) -> putStrLn ("// File: " ++ (maybe "no file" id $ f)) >> (print . atsPrettyGlobal $ g)) fglobal
   -- xxx Create sats files
