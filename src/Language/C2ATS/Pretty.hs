@@ -64,9 +64,7 @@ predef_c2ats_any          = text "predef_c2ats_any"
 preDefineGlobal :: Doc
 preDefineGlobal =
   text "abst@ype" <+> predef_c2ats_gnuc_va_list <+> text "= $extype\"__gnuc_va_list\"" $+$ -- gcc specific
-  text "abst@ype" <+> predef_c2ats_any $+$ -- can't use in ATS
-  text "abst@ype short = $extype\"short\"" $+$
-  text "abst@ype ushort = $extype\"ushort\""
+  text "abst@ype" <+> predef_c2ats_any -- can't use in ATS
 
 atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
 atsPrettyGlobal m = (vcat . map f $ m)
@@ -117,8 +115,8 @@ instance AtsPretty TypeName where
       f TyChar    = text "char"
       f TySChar   = text "schar"
       f TyUChar   = text "uchar"
-      f TyShort   = text "short"
-      f TyUShort  = text "ushort"
+      f TyShort   = text "sint"
+      f TyUShort  = text "usint"
       f TyInt     = text "int"
       f TyUInt    = text "uint"
       f TyInt128  = trace "*** \"int128\" not implemented in ATS" $ text "int128"
