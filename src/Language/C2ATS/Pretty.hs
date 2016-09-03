@@ -185,13 +185,13 @@ instance AtsPretty MemberDecl where -- Ignore bit field
 
 instance AtsPretty IdentDecl where
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
-    text "fun fun" <> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+    text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ ty) _)) =
     text "macdef extval" <> atsPretty m ident <+> text "= $extval(" <> atsPretty m ty <> text ", \"" <> pretty ident <> text "\")"
   atsPretty m (ObjectDef (ObjDef (VarDecl (VarName ident _) _ ty) _ _)) =
     text "macdef extval" <> atsPretty m ident <+> text "= $extval(" <> atsPretty m ty <> text ", \"" <> pretty ident <> text "\")"
   atsPretty m (FunctionDef (FunDef (VarDecl (VarName ident _) _ ty) _ _)) =
-    text "fun fun" <> atsPretty m ident <+> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+    text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
     text "#define enum" <> atsPretty m i <+> pretty e
 

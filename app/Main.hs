@@ -15,5 +15,5 @@ main = do
   let fglobal = splitFlatGlobal . sortFlatGlobal . flatGlobal $ globals
   -- xxx Pick up typedef using pointer
   -- xxx Split with files
-  print preDefineGlobal >> mapM_ (\(f,g) -> putStrLn ("// File: " ++ (maybe "no file" id $ f)) >> (print . atsPrettyGlobal $ g)) fglobal
+  print preDefineGlobal >> mapM_ (\(f,g) -> putStrLn ("\n// File: " ++ (maybe "no file" id $ f)) >> (print . atsPrettyGlobal $ g)) fglobal
   -- xxx Create sats files
