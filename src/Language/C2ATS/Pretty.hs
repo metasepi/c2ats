@@ -73,9 +73,11 @@ atsPrettyGlobal m = (vcat . map f $ m)
     f (_, d) = atsPretty (Map.fromList m) d
 
 --------------------------------------------------------------------------------
+type AtsPrettyMap = Map SUERef FlatGlobalDecl
+
 class AtsPretty p where
-  atsPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
-  atsPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
+  atsPretty     :: AtsPrettyMap -> p -> Doc
+  atsPrettyPrec :: AtsPrettyMap -> Int -> p -> Doc
   atsPretty     m   = atsPrettyPrec m 0
   atsPrettyPrec m _ = atsPretty m
 
@@ -151,9 +153,41 @@ instance AtsPretty TypeDefRef where
 
 instance AtsPretty FunType where
   atsPretty m (FunTypeIncomplete t) = text "() ->" <+> atsPretty m t
-  atsPretty m (FunType t ps _) = text "(" <> args <> text ")" <+> text "->" <+> atsPretty m t
-    where
-      args = hcat $ punctuate (text ", ") $ map (atsPretty m) ps
+  atsPretty m (FunType t ps _) = addrs <> text "(" <> views <> args <> text ")" <+> text "->" <+> atsPretty m t
+    where -- xxx Should follow pointer of pointer
+      isViewPointer :: Type -> Bool
+      isViewPointer (PtrType (FunctionType _ _) _ _)      = False
+      isViewPointer (PtrType (DirectType TyVoid _ _) _ _) = False
+      isViewPointer (PtrType _ _ _)                       = True
+      isViewPointer _                                     = False
+      unViewPointer :: Type -> Type
+      unViewPointer (PtrType (FunctionType t _) _ _)      = undefined
+      unViewPointer (PtrType (DirectType TyVoid _ _) _ _) = undefined
+      unViewPointer (PtrType t _ _)                       = t
+      unViewPointer _                                     = undefined
+      argf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
+      argf m (ParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+        (n + 1, ps ++ [text "ptr l" <> int n])
+      argf m p (n, ps) = (n, ps ++ [atsPretty m p])
+      args = hcat $ punctuate (text ", ") $ snd (foldr (argf m) (1, []) ps)
+      addrf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
+      addrf m (ParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+        (n + 1, ps ++ [text "l" <> int n])
+      addrf m (AbstractParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+        (n + 1, ps ++ [text "l" <> int n])
+      addrf m p l = l
+      addrs = let a = snd (foldr (addrf m) (1, []) ps)
+              in if null a then empty
+                 else text "{" <> (hcat $ punctuate (text ",") a) <> text ":addr} "
+      viewf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
+      viewf m (ParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+        (n + 1, ps ++ [atsPretty m (unViewPointer ty) <+> text "@ l" <> int n])
+      viewf m (AbstractParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+        (n + 1, ps ++ [atsPretty m (unViewPointer ty) <+> text "@ l" <> int n])
+      viewf m p l = l
+      views = let v = snd (foldr (viewf m) (1, []) ps)
+              in if null v then empty
+                 else text "" <> (hcat $ punctuate (text ", ") v) <+> text "| "
 
 instance AtsPretty ParamDecl where
   atsPretty m (ParamDecl (VarDecl _ _ ty) _)      = atsPretty m ty
@@ -177,7 +211,7 @@ instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (MemberDecl (VarDecl name declattrs ty) _ _) =
     pretty declattrs <+> pretty name <+> text "=" <+> atsPretty' m ty
     where
-      atsPretty' :: Map SUERef FlatGlobalDecl -> Type -> Doc
+      atsPretty' :: AtsPrettyMap -> Type -> Doc
       atsPretty' m (PtrType (FunctionType t _) _ _) = atsPretty m t
       atsPretty' m (PtrType t _ _) = text "ptr (* cPtr0(" <> atsPretty m t <> text ") *)"
       atsPretty' m t = atsPretty m t
@@ -297,12 +331,12 @@ instance AtsPretty CTypeSpec where
 
 --------------------------------------------------------------------------------
 class CPretty p where
-  cPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
-  cPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
+  cPretty     :: AtsPrettyMap -> p -> Doc
+  cPrettyPrec :: AtsPrettyMap -> Int -> p -> Doc
   cPretty     m   = cPrettyPrec m 0
   cPrettyPrec m _ = cPretty m
 
-subscriptArray :: Map SUERef FlatGlobalDecl -> Type -> Doc
+subscriptArray :: AtsPrettyMap -> Type -> Doc
 subscriptArray m (ArrayType t s _ _) = (brackets $ atsPretty m s) <> subscriptArray m t
 subscriptArray m t = empty
 
@@ -372,12 +406,12 @@ instance CPretty Ident where
 instance CPretty TypeDefRef where
   cPretty m (TypeDefRef ident _ _) = cPretty m ident
 
-prettyCParamFun :: Map SUERef FlatGlobalDecl -> Ident -> Type -> [ParamDecl] -> Doc
+prettyCParamFun :: AtsPrettyMap -> Ident -> Type -> [ParamDecl] -> Doc
 prettyCParamFun m n ty para =
   cPretty m ty <+> cPretty m n <> parens (hcat $ punctuate (text ", ") $ map (cPretty m) para)
-prettyCParam :: Map SUERef FlatGlobalDecl -> Ident -> Type -> Doc
+prettyCParam :: AtsPrettyMap -> Ident -> Type -> Doc
 prettyCParam m n ty = cPretty m ty <+> cPretty m n <> subscriptArray m ty
-prettyCParamNoname :: Map SUERef FlatGlobalDecl -> Type -> Doc
+prettyCParamNoname :: AtsPrettyMap -> Type -> Doc
 prettyCParamNoname m ty = cPretty m ty <> subscriptArray m ty
 
 instance CPretty ParamDecl where
