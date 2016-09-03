@@ -172,7 +172,7 @@ instance AtsPretty FunType where
       unViewPointer (PtrType t _ _)                       = t
       unViewPointer _                                     = undefined
       argf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
-      argf m (ParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+      argf m pd (n, ps) | isViewPointer' pd =
         (n + 1, ps ++ [text "ptr l" <> int n])
       argf m p (n, ps) = (n, ps ++ [atsPretty m p])
       args = hcat $ punctuate (text ", ") $ snd (foldr (argf m) (1, []) ps)
