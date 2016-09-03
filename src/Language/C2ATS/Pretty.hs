@@ -156,12 +156,17 @@ instance AtsPretty FunType where
   atsPretty m (FunType t ps _) =
     addrs <> text "(" <> views <> args <> text ")" <+> text "->" <+> raddrs <+> ret
     where -- xxx Should follow pointer of pointer
+      paramDeclType :: ParamDecl -> Type
+      paramDeclType (ParamDecl (VarDecl _ _ ty) _)         = ty
+      paramDeclType (AbstractParamDecl (VarDecl _ _ ty) _) = ty
       isViewPointer :: Type -> Bool
       isViewPointer (PtrType (FunctionType _ _) _ _)      = False
       isViewPointer (PtrType (DirectType TyVoid _ _) _ _) = False
       isViewPointer (PtrType _ _ _)                       = True
       isViewPointer _                                     = False
-      unViewPointer :: Type -> Type
+      isViewPointer' :: ParamDecl -> Bool
+      isViewPointer' = isViewPointer . paramDeclType
+      unViewPointer :: Type -> Type -- xxx Bad design
       unViewPointer (PtrType (FunctionType t _) _ _)      = undefined
       unViewPointer (PtrType (DirectType TyVoid _ _) _ _) = undefined
       unViewPointer (PtrType t _ _)                       = t
@@ -181,10 +186,8 @@ instance AtsPretty FunType where
               in if null a then empty
                  else text "{" <> (hcat $ punctuate (text ",") a) <> text ":addr} "
       viewf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
-      viewf m (ParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
-        (n + 1, ps ++ [atsPretty m (unViewPointer ty) <+> text "@ l" <> int n])
-      viewf m (AbstractParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
-        (n + 1, ps ++ [atsPretty m (unViewPointer ty) <+> text "@ l" <> int n])
+      viewf m pd (n, ps) | isViewPointer' pd =
+        (n + 1, ps ++ [atsPretty m (unViewPointer . paramDeclType $ pd) <+> text "@ l" <> int n])
       viewf m p l = l
       views = let v = snd (foldr (viewf m) (1, []) ps)
               in if null v then empty
