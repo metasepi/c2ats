@@ -153,7 +153,8 @@ instance AtsPretty TypeDefRef where
 
 instance AtsPretty FunType where
   atsPretty m (FunTypeIncomplete t) = text "() ->" <+> atsPretty m t
-  atsPretty m (FunType t ps _) = addrs <> text "(" <> views <> args <> text ")" <+> text "->" <+> atsPretty m t
+  atsPretty m (FunType t ps _) =
+    addrs <> text "(" <> views <> args <> text ")" <+> text "->" <+> raddrs <+> ret
     where -- xxx Should follow pointer of pointer
       isViewPointer :: Type -> Bool
       isViewPointer (PtrType (FunctionType _ _) _ _)      = False
@@ -188,6 +189,13 @@ instance AtsPretty FunType where
       views = let v = snd (foldr (viewf m) (1, []) ps)
               in if null v then empty
                  else text "" <> (hcat $ punctuate (text ", ") v) <+> text "| "
+      ri = int (fst (foldr (addrf m) (1, []) ps))
+      rviews = if not (isViewPointer t) then empty
+               else atsPretty m (unViewPointer t) <+> text "@ l" <> ri <+> text "| "
+      raddrs = if not (isViewPointer t) then empty
+               else text "[l" <> ri <> text ":addr]"
+      ret = if not (isViewPointer t) then atsPretty m t
+            else text "(" <> rviews <> text "ptr l" <> ri <> text ")"
 
 instance AtsPretty ParamDecl where
   atsPretty m (ParamDecl (VarDecl _ _ ty) _)      = atsPretty m ty
