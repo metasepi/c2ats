@@ -72,7 +72,7 @@ atsPrettyGlobal m = (vcat . map f $ m)
     f :: (SUERef, FlatGlobalDecl) -> Doc
     f (_, d) = atsPretty (Map.fromList m) d
 
-------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 class AtsPretty p where
   atsPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
   atsPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
@@ -175,7 +175,12 @@ instance AtsPretty CompType where
 
 instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (MemberDecl (VarDecl name declattrs ty) _ _) =
-    pretty declattrs <+> pretty name <+> text "=" <+> atsPretty m ty
+    pretty declattrs <+> pretty name <+> text "=" <+> atsPretty' m ty
+    where
+      atsPretty' :: Map SUERef FlatGlobalDecl -> Type -> Doc
+      atsPretty' m (PtrType (FunctionType t _) _ _) = atsPretty m t
+      atsPretty' m (PtrType t _ _) = text "ptr (* cPtr0(" <> atsPretty m t <> text ") *)"
+      atsPretty' m t = atsPretty m t
   atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
 
 instance AtsPretty IdentDecl where
@@ -290,7 +295,7 @@ instance AtsPretty CTypeSpec where
   atsPretty m (CEnumType enum _)   = text "int"
   atsPretty m (CTypeDef ident _)   = identP ident
 
-------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 class CPretty p where
   cPretty     :: Map SUERef FlatGlobalDecl -> p -> Doc
   cPrettyPrec :: Map SUERef FlatGlobalDecl -> Int -> p -> Doc
@@ -312,7 +317,7 @@ instance CPretty MemberDecl where
 
 instance CPretty Type where
   cPretty m (DirectType t _ _)  = cPretty m t
-  cPretty m (PtrType t _ _)     = cPretty m t <+> text "*"
+  cPretty m (PtrType t _ _)     = cPretty m t <> text "*"
   cPretty m (ArrayType t _ _ _) = cPretty m t
   cPretty m (TypeDefType t _ _) = cPretty m t
   -- Do not print function type directly

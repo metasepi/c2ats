@@ -28,6 +28,7 @@ struct {
   int a[2][3][4];
   int *b;
   struct t *c;
+  int ***d;
 };
 typedef S T;
 S f();
