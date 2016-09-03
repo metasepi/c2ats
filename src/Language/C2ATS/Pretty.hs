@@ -177,9 +177,7 @@ instance AtsPretty FunType where
       argf m p (n, ps) = (n, ps ++ [atsPretty m p])
       args = hcat $ punctuate (text ", ") $ snd (foldr (argf m) (1, []) ps)
       addrf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
-      addrf m (ParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
-        (n + 1, ps ++ [text "l" <> int n])
-      addrf m (AbstractParamDecl (VarDecl _ _ ty) _) (n, ps) | isViewPointer ty =
+      addrf m pd (n, ps) | isViewPointer' pd =
         (n + 1, ps ++ [text "l" <> int n])
       addrf m p l = l
       addrs = let a = snd (foldr (addrf m) (1, []) ps)
