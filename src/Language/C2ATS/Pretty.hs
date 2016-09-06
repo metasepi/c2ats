@@ -5,6 +5,8 @@ module Language.C2ATS.Pretty
        , sortFlatGlobal
        , splitFlatGlobal
        , preDefineGlobal
+       , AtsPretty (..)
+       , CPretty (..)
        ) where
 
 import Data.List

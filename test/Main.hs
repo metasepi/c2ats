@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Main where
 
 import Test.Framework.TH
@@ -8,4 +9,6 @@ import Test.Framework.Providers.HUnit
 import Language.C2ATS
 
 main :: IO ()
-main = return ()
+main = $(defaultMainGenerator)
+
+case_1 = 1 @=? 1
