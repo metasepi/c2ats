@@ -173,26 +173,26 @@ instance AtsPretty FunType where
       unViewPointer (PtrType (DirectType TyVoid _ _) _ _) = undefined
       unViewPointer (PtrType t _ _)                       = t
       unViewPointer _                                     = undefined
-      argf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
-      argf m pd (n, ps) | isViewPointer' pd =
+      argf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
+      argf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [text "ptr l" <> int n])
-      argf m p (n, ps) = (n, ps ++ [atsPretty m p])
-      args = hcat $ punctuate (text ", ") $ snd (foldr (argf m) (1, []) ps)
-      addrf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
-      addrf m pd (n, ps) | isViewPointer' pd =
+      argf m (n, ps) p = (n, ps ++ [atsPretty m p])
+      args = hcat $ punctuate (text ", ") $ snd (foldl (argf m) (1, []) ps)
+      addrf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
+      addrf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [text "l" <> int n])
-      addrf m p l = l
-      addrs = let a = snd (foldr (addrf m) (1, []) ps)
+      addrf m l p = l
+      addrs = let a = snd (foldl (addrf m) (1, []) ps)
               in if null a then empty
                  else text "{" <> (hcat $ punctuate (text ",") a) <> text ":addr} "
-      viewf :: AtsPrettyMap -> ParamDecl -> (Int, [Doc]) -> (Int, [Doc])
-      viewf m pd (n, ps) | isViewPointer' pd =
+      viewf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
+      viewf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [atsPretty m (unViewPointer . paramDeclType $ pd) <+> text "@ l" <> int n])
-      viewf m p l = l
-      views = let v = snd (foldr (viewf m) (1, []) ps)
+      viewf m l p = l
+      views = let v = snd (foldl (viewf m) (1, []) ps)
               in if null v then empty
                  else text "" <> (hcat $ punctuate (text ", ") v) <+> text "| "
-      ri = int (fst (foldr (addrf m) (1, []) ps))
+      ri = int (fst (foldl (addrf m) (1, []) ps))
       rviews = if not (isViewPointer t) then empty
                else atsPretty m (unViewPointer t) <+> text "@ l" <> ri <+> text "| "
       raddrs = if not (isViewPointer t) then empty
