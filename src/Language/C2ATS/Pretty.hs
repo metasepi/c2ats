@@ -66,7 +66,14 @@ predef_c2ats_any          = text "predef_c2ats_any"
 preDefineGlobal :: Doc
 preDefineGlobal =
   text "abst@ype" <+> predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
-  text "abst@ype" <+> predef_c2ats_any              -- can't use in ATS
+  text "abst@ype" <+> predef_c2ats_any $+$          -- can't use in ATS
+  text (unlines [
+           "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
+           "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
+           "  | ptr_v_2_cons(a, l0, l1) of (ptr l1 @ l0, ptr_v_1 (a, l1))",
+           "dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =",
+           "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
+           ])
 
 atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
 atsPrettyGlobal m = (vcat . map f $ m)
