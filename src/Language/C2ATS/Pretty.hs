@@ -164,7 +164,7 @@ instance AtsPretty FunType where
   atsPretty m (FunTypeIncomplete t) = text "() ->" <+> atsPretty m t
   atsPretty m (FunType t ps _) =
     addrs <> text "(" <> views <> args <> text ")" <+> text "->" <+> raddrs <+> ret
-    where -- xxx Should follow pointer of pointer
+    where
       paramDeclType :: ParamDecl -> Type
       paramDeclType (ParamDecl (VarDecl _ _ ty) _)         = ty
       paramDeclType (AbstractParamDecl (VarDecl _ _ ty) _) = ty
@@ -403,7 +403,8 @@ instance CPretty Type where
 
 instance CPretty TypeName where
   cPretty m TyVoid                       = text "void"
-  cPretty m (TyComp (CompTypeRef s c _)) = cPretty m s
+  cPretty m (TyComp (CompTypeRef s@(NamedRef _) c _))     = cPretty m c <+> cPretty m s
+  cPretty m (TyComp (CompTypeRef s@(AnonymousRef _) c _)) = cPretty m s
   cPretty m (TyEnum e)                   = cPretty m e
   cPretty m t@(TyComplex _) =
     let msg = text "Not support TyComplex"
