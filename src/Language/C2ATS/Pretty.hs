@@ -81,9 +81,9 @@ atsPrettyGlobal m = (vcat . map f $ m)
     f :: (SUERef, FlatGlobalDecl) -> Doc
     f (_, d) = atsPretty (Map.fromList m) d
 
---------------------------------------------------------------------------------
 type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
+--------------------------------------------------------------------------------
 class AtsPretty p where
   atsPretty     :: AtsPrettyMap -> p -> Doc
   atsPrettyPrec :: AtsPrettyMap -> Int -> p -> Doc
@@ -365,6 +365,26 @@ subscriptArray :: AtsPrettyMap -> Type -> Doc
 subscriptArray m (ArrayType t s _ _) = (brackets $ atsPretty m s) <> subscriptArray m t
 subscriptArray m t = empty
 
+instance CPretty FlatGlobalDecl where
+  -- cPretty m (FGObj  d) = cPretty m d
+  cPretty m (FGTag  d) = cPretty m d
+  cPretty m (FGType d) = cPretty m d
+
+instance CPretty TagDef where
+  cPretty m (CompDef compty) = cPretty m compty
+  cPretty m (EnumDef enumty) = text "int" -- ATS does not have enum
+
+instance CPretty TypeDef where
+  cPretty m (TypeDef ident ty _ _) =
+    text "typedef" <+> cPretty m ty <+> cPretty m ident
+
+instance CPretty CompType where
+  cPretty m (CompType sue_ref tag members attrs node) =
+    ext sue_ref
+    where
+      ext (NamedRef ident) = cPretty m tag <+> pretty ident
+      ext (AnonymousRef _) = cPretty m tag <+> text "{" <+> hcat (map (cPretty m) members) <> text "}"
+
 instance CPretty MemberDecl where
   cPretty m (MemberDecl (VarDecl name _ (PtrType (FunctionType (FunType ty para _) _) _ _)) _ _) =
     cPretty m ty <+> text "(*" <> pretty name <> text ")(" <> hcat (punctuate (text ", ") $ map (cPretty m) para) <> text ")" <> text "; "
@@ -383,7 +403,7 @@ instance CPretty Type where
 
 instance CPretty TypeName where
   cPretty m TyVoid                       = text "void"
-  cPretty m (TyComp (CompTypeRef s c _)) = cPretty m c <+> cPretty m s
+  cPretty m (TyComp (CompTypeRef s c _)) = cPretty m s
   cPretty m (TyEnum e)                   = cPretty m e
   cPretty m t@(TyComplex _) =
     let msg = text "Not support TyComplex"
@@ -419,8 +439,9 @@ instance CPretty CompTyKind where
   cPretty m UnionTag  = text "union"
 
 instance CPretty SUERef where
-  cPretty m (AnonymousRef name) = text "$" <> int (nameId name)
   cPretty m (NamedRef ident) = cPretty m ident
+  cPretty m s@(AnonymousRef _) =
+    let Just g = Map.lookup s m in cPretty m g
 
 instance CPretty EnumTypeRef where
   cPretty m (EnumTypeRef _ _ ) = text "int" -- ATS does not have enum
