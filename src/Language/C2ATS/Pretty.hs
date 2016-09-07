@@ -175,11 +175,18 @@ instance AtsPretty FunType where
       isViewPointer _                                     = False
       isViewPointer' :: ParamDecl -> Bool
       isViewPointer' = isViewPointer . paramDeclType
-      unViewPointer :: Type -> Type -- xxx Bad design
-      unViewPointer (PtrType (FunctionType t _) _ _)      = undefined
-      unViewPointer (PtrType (DirectType TyVoid _ _) _ _) = undefined
-      unViewPointer (PtrType t _ _)                       = t
-      unViewPointer _                                     = undefined
+      atviewToList :: AtsPrettyMap -> Type -> (Int, Int) -> [Doc] -> [Doc]
+      atviewToList m (PtrType (FunctionType t _) _ _) _ d      = (atsPretty m t) : d
+      atviewToList m (PtrType (DirectType TyVoid _ _) _ _) _ d = text "ptr" : d
+      atviewToList m (PtrType t _ _) (i,j) d                       =
+        let minor = if j == 0 then empty else text "_" <> int j
+        in atviewToList m t (i,j+1) (d ++ [text "l" <> int i <> minor])
+      atviewToList m t _ d                                     = (atsPretty m t) : d
+      atviewShow :: AtsPrettyMap -> Type -> Int -> Doc
+      atviewShow m t n =
+        let l = atviewToList m t (n, 0) []
+        in text "ptr_v_" <> int (length l - 1) <> text "(" <>
+           (hcat $ punctuate (text ", ") l) <> text ")"
       argf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       argf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [text "ptr l" <> int n])
@@ -187,25 +194,25 @@ instance AtsPretty FunType where
       args = hcat $ punctuate (text ", ") $ snd (foldl (argf m) (1, []) ps)
       addrf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       addrf m (n, ps) pd | isViewPointer' pd =
-        (n + 1, ps ++ [text "l" <> int n])
+        (n + 1, ps ++ (tail $ atviewToList m (paramDeclType pd) (n, 0) []))
       addrf m l p = l
       addrs = let a = snd (foldl (addrf m) (1, []) ps)
               in if null a then empty
                  else text "{" <> (hcat $ punctuate (text ",") a) <> text ":addr} "
       viewf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       viewf m (n, ps) pd | isViewPointer' pd =
-        (n + 1, ps ++ [atsPretty m (unViewPointer . paramDeclType $ pd) <+> text "@ l" <> int n])
+        (n + 1, ps ++ [atviewShow m (paramDeclType pd) n])
       viewf m l p = l
       views = let v = snd (foldl (viewf m) (1, []) ps)
               in if null v then empty
                  else text "" <> (hcat $ punctuate (text ", ") v) <+> text "| "
-      ri = int (fst (foldl (addrf m) (1, []) ps))
+      ri = fst (foldl (addrf m) (1, []) ps)
       rviews = if not (isViewPointer t) then empty
-               else atsPretty m (unViewPointer t) <+> text "@ l" <> ri <+> text "| "
+               else atviewShow m t ri <+> text "| "
       raddrs = if not (isViewPointer t) then empty
-               else text "[l" <> ri <> text ":addr]"
+               else text "[" <> (hcat $ punctuate (text ",") (tail $ atviewToList m t (ri,0) [])) <> text ":addr]"
       ret = if not (isViewPointer t) then atsPretty m t
-            else text "(" <> rviews <> text "ptr l" <> ri <> text ")"
+            else text "(" <> rviews <> text "ptr l" <> int ri <> text ")"
 
 instance AtsPretty ParamDecl where
   atsPretty m (ParamDecl (VarDecl _ _ ty) _)      = atsPretty m ty
