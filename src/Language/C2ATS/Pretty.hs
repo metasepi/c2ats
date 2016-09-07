@@ -201,7 +201,7 @@ instance AtsPretty FunType where
                  else text "{" <> (hcat $ punctuate (text ",") a) <> text ":addr} "
       viewf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       viewf m (n, ps) pd | isViewPointer' pd =
-        (n + 1, ps ++ [atviewShow m (paramDeclType pd) n])
+        (n + 1, ps ++ [text "!" <> atviewShow m (paramDeclType pd) n])
       viewf m l p = l
       views = let v = snd (foldl (viewf m) (1, []) ps)
               in if null v then empty
