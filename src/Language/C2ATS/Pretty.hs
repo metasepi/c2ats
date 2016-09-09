@@ -74,7 +74,7 @@ preDefineGlobal =
 type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
 --------------------------------------------------------------------------------
-sortFlatGlobal :: [FlatG] -> [FlatG]
+sortFlatGlobal :: [FlatG] -> [FlatG] -- xxx How to maintain left FlagGs?
 sortFlatGlobal = (\(a,_,_) -> a) . foldl go ([], Map.empty, []) . sortBy order
   where
     order :: FlatG -> FlatG -> Ordering
@@ -82,10 +82,10 @@ sortFlatGlobal = (\(a,_,_) -> a) . foldl go ([], Map.empty, []) . sortBy order
     go :: ([FlatG], Map Int (), [(Map Int (), FlatG)]) -> FlatG ->
           ([FlatG], Map Int (), [(Map Int (), FlatG)])
     go (out, om, ks) fg@(s,f) =
-      let ks'  = ks ++ [(anons fg, fg)]
+      let ks'  = (anons fg, fg) : ks
           om'  = Map.insert (nodeSUERef s) () om
           ks'' = filter (\(m, f) -> not . Map.null $ Map.difference m om') ks'
-          out' = out ++ reverse (map snd $ filter (\(m, f) -> Map.null $ Map.difference m om') ks')
+          out' = out ++ (map snd $ filter (\(m, f) -> Map.null $ Map.difference m om') ks')
       in trace ((show . length $ ks'') ++
                 " " ++ show (anons fg) ++
                 " " ++ show (nodeSUERef s) ++
@@ -122,8 +122,7 @@ instance AnonRefs VarDecl where
 
 instance AnonRefs TagDef where
   anonRefs (EnumDef _)                    = Map.empty  -- ATS does not have enum
-  anonRefs (CompDef (CompType s _ m _ _)) =
-    Map.union (anonRefs s) (Map.unions $ map anonRefs m)
+  anonRefs (CompDef (CompType _ _ m _ _)) = Map.unions $ map anonRefs m
 
 instance AnonRefs TypeDef where
   anonRefs (TypeDef _ t _ _) = anonRefs t
