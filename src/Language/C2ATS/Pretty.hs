@@ -131,7 +131,6 @@ instance AnonRefs Type where
   anonRefs (PtrType t _ _)                             = anonRefs t
   anonRefs (ArrayType t _ _ _)                         = anonRefs t
   anonRefs (FunctionType ft _)                         = anonRefs ft
-  anonRefs (TypeDefType (TypeDefRef _ (Just t) _) _ _) = anonRefs t
   anonRefs (DirectType tn _ _)                         = anonRefs tn
   anonRefs _                                           = Map.empty
 
