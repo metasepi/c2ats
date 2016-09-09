@@ -34,20 +34,16 @@ instance Pretty FlatGlobalDecl where
   pretty (FGTag  d) = pretty d
   pretty (FGType d) = pretty d
 
-flatGlobal :: GlobalDecls -> [(SUERef, FlatGlobalDecl)]
+type FlatG = (SUERef, FlatGlobalDecl)
+
+flatGlobal :: GlobalDecls -> [FlatG]
 flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
   where
     theTags     = Map.assocs $ Map.map FGTag  $ gTags gmap
     theObjs     = Map.assocs $ Map.map FGObj  $ Map.mapKeys NamedRef $ gObjs gmap
     theTypeDefs = Map.assocs $ Map.map FGType $ Map.mapKeys NamedRef $ gTypeDefs gmap
 
-sortFlatGlobal :: [(SUERef, FlatGlobalDecl)] -> [(SUERef, FlatGlobalDecl)]
-sortFlatGlobal = sortBy order -- xxx swap anon {struct,union}
-  where
-    order :: (SUERef, FlatGlobalDecl) -> (SUERef, FlatGlobalDecl) -> Ordering
-    order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
-
-splitFlatGlobal :: [(SUERef, FlatGlobalDecl)] -> [(Maybe FilePath, [(SUERef, FlatGlobalDecl)])]
+splitFlatGlobal :: [FlatG] -> [(Maybe FilePath, [FlatG])]
 splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths m
   where
     f :: String -> Maybe FilePath
@@ -55,9 +51,9 @@ splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths
     f "<builtin>"  = Nothing
     f "<internal>" = Nothing
     f xs           = Just $ filter (\c -> c /= '"' && c /= ':' && c /= '(') . head . words $ xs
-    getFile :: (SUERef, FlatGlobalDecl) -> Maybe FilePath
+    getFile :: FlatG -> Maybe FilePath
     getFile = f . show . posOfNode . nodeInfo . snd
-    filePaths :: [(SUERef, FlatGlobalDecl)] -> [Maybe FilePath]
+    filePaths :: [FlatG] -> [Maybe FilePath]
     filePaths = nub . map getFile
 
 predef_c2ats_gnuc_va_list = text "predef_c2ats_gnuc_va_list"
@@ -75,15 +71,95 @@ preDefineGlobal =
            "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
            ])
 
-atsPrettyGlobal :: [(SUERef, FlatGlobalDecl)] -> Doc
-atsPrettyGlobal m = (vcat . map f $ m)
-  where
-    f :: (SUERef, FlatGlobalDecl) -> Doc
-    f (_, d) = atsPretty (Map.fromList m) d
-
 type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
 --------------------------------------------------------------------------------
+sortFlatGlobal :: [FlatG] -> [FlatG]
+sortFlatGlobal = (\(a,_,_) -> a) . foldl go ([], Map.empty, []) . sortBy order
+  where
+    order :: FlatG -> FlatG -> Ordering
+    order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
+    go :: ([FlatG], Map Int (), [(Map Int (), FlatG)]) -> FlatG ->
+          ([FlatG], Map Int (), [(Map Int (), FlatG)])
+    go (out, om, ks) fg@(s,f) =
+      let ks'  = ks ++ [(anons fg, fg)]
+          om'  = Map.insert (nodeSUERef s) () om
+          ks'' = filter (\(m, f) -> not . Map.null $ Map.difference m om') ks'
+          out' = out ++ reverse (map snd $ filter (\(m, f) -> Map.null $ Map.difference m om') ks')
+      in trace ((show . length $ ks'') ++
+                " " ++ show (anons fg) ++
+                " " ++ show (nodeSUERef s) ++
+                " " ++ (show . pretty $ f))
+         (out', om', ks'') -- xxx
+    anons :: FlatG -> Map Int ()
+    anons (_, g) = anonRefs g
+
+nodeSUERef :: SUERef -> Int
+nodeSUERef (AnonymousRef n)                        = nameId n
+nodeSUERef (NamedRef (Ident _ _ (NodeInfo _ _ n))) = nameId n
+nodeSUERef _                                       = -1
+
+class AnonRefs p where
+  anonRefs :: p -> Map Int ()
+
+instance AnonRefs FlatGlobalDecl where
+  anonRefs (FGObj  d) = anonRefs d
+  anonRefs (FGTag  d) = anonRefs d
+  anonRefs (FGType d) = anonRefs d
+
+instance AnonRefs IdentDecl where
+  anonRefs (Declaration (Decl v _))     = anonRefs v
+  anonRefs (ObjectDef (ObjDef v _ _))   = anonRefs v
+  anonRefs (FunctionDef (FunDef v _ _)) = anonRefs v
+  anonRefs (EnumeratorDef _)            = Map.empty -- ATS does not have enum
+
+instance AnonRefs MemberDecl where
+  anonRefs (MemberDecl v _ _)   = anonRefs v
+  anonRefs (AnonBitField t _ _) = anonRefs t
+
+instance AnonRefs VarDecl where
+  anonRefs (VarDecl _ _ t) = anonRefs t
+
+instance AnonRefs TagDef where
+  anonRefs (EnumDef _)                    = Map.empty  -- ATS does not have enum
+  anonRefs (CompDef (CompType s _ m _ _)) =
+    Map.union (anonRefs s) (Map.unions $ map anonRefs m)
+
+instance AnonRefs TypeDef where
+  anonRefs (TypeDef _ t _ _) = anonRefs t
+
+instance AnonRefs Type where
+  anonRefs (PtrType t _ _)                             = anonRefs t
+  anonRefs (ArrayType t _ _ _)                         = anonRefs t
+  anonRefs (FunctionType ft _)                         = anonRefs ft
+  anonRefs (TypeDefType (TypeDefRef _ (Just t) _) _ _) = anonRefs t
+  anonRefs (DirectType tn _ _)                         = anonRefs tn
+  anonRefs _                                           = Map.empty
+
+instance AnonRefs TypeName where
+  anonRefs (TyComp (CompTypeRef s _ _)) = anonRefs s
+  anonRefs _                            = Map.empty
+
+instance AnonRefs FunType where
+  anonRefs (FunTypeIncomplete t) = anonRefs t
+  anonRefs (FunType t p _)       =
+    Map.union (anonRefs t) (Map.unions $ map anonRefs p)
+
+instance AnonRefs ParamDecl where
+  anonRefs (ParamDecl v _)         = anonRefs v
+  anonRefs (AbstractParamDecl v _) = anonRefs v
+
+instance AnonRefs SUERef where
+  anonRefs s@(AnonymousRef _) = Map.singleton (nodeSUERef s) ()
+  anonRefs (NamedRef _)       = Map.empty
+
+--------------------------------------------------------------------------------
+atsPrettyGlobal :: [FlatG] -> Doc
+atsPrettyGlobal m = (vcat . map f $ m)
+  where
+    f :: FlatG -> Doc
+    f (_, d) = atsPretty (Map.fromList m) d
+
 class AtsPretty p where
   atsPretty     :: AtsPrettyMap -> p -> Doc
   atsPrettyPrec :: AtsPrettyMap -> Int -> p -> Doc
