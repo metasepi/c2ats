@@ -75,22 +75,15 @@ type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG] -- xxx How to maintain left FlagGs?
-sortFlatGlobal = (\(a,_,_) -> a) . foldl go ([], Map.empty, []) . sortBy order
+sortFlatGlobal = (\(a,_) -> a) . foldl go ([], []) . sortBy order
   where
     order :: FlatG -> FlatG -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
-    go :: ([FlatG], Map Int (), [(Map Int (), FlatG)]) -> FlatG ->
-          ([FlatG], Map Int (), [(Map Int (), FlatG)])
-    go (out, om, ks) fg@(s,f) =
-      let ks'  = (anons fg, fg) : ks
-          om'  = Map.insert (nodeSUERef s) () om
-          ks'' = filter (\(m, f) -> not . Map.null $ Map.difference m om') ks'
-          out' = out ++ (map snd $ filter (\(m, f) -> Map.null $ Map.difference m om') ks')
-      in trace ((show . length $ ks'') ++
-                " " ++ show (anons fg) ++
-                " " ++ show (nodeSUERef s) ++
-                " " ++ (show . pretty $ f))
-         (out', om', ks'') -- xxx
+    go :: ([FlatG], [FlatG]) -> FlatG -> ([FlatG], [FlatG])
+    go (out, ks) fg =
+      let out' = out ++ if Map.null $ anons fg then fg : ks else []
+          ks'  = if Map.null $ anons fg then [] else fg : ks
+      in (out', ks')
     anons :: FlatG -> Map Int ()
     anons (_, g) = anonRefs g
 
