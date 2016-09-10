@@ -451,8 +451,12 @@ class CPretty p where
   cPrettyPrec m _ = cPretty m
 
 subscriptArray :: AtsPrettyMap -> Type -> Doc
-subscriptArray m (ArrayType t s _ _) = (brackets $ atsPretty m s) <> subscriptArray m t
+subscriptArray m (ArrayType t s _ _) = (brackets $ cPretty m s) <> subscriptArray m t
 subscriptArray m t = empty
+
+instance CPretty ArraySize where
+  cPretty m (UnknownArraySize _) = empty
+  cPretty m (ArraySize _ e)      = pretty e
 
 instance CPretty FlatGlobalDecl where
   -- cPretty m (FGObj  d) = cPretty m d
