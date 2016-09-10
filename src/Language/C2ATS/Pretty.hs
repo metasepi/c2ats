@@ -75,7 +75,7 @@ type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG] -- xxx How to maintain left FlagGs?
-sortFlatGlobal = (\(a,_) -> a) . foldl go ([], []) . sortBy order
+sortFlatGlobal = (\(a,b) -> a ++ b) . foldl go ([], []) . sortBy order
   where
     order :: FlatG -> FlatG -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
