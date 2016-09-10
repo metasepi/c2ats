@@ -74,7 +74,7 @@ preDefineGlobal =
 type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
 --------------------------------------------------------------------------------
-sortFlatGlobal :: [FlatG] -> [FlatG] -- xxx How to maintain left FlagGs?
+sortFlatGlobal :: [FlatG] -> [FlatG]
 sortFlatGlobal = (\(a,b) -> a ++ b) . foldl go ([], []) . sortBy order
   where
     order :: FlatG -> FlatG -> Ordering
@@ -343,8 +343,7 @@ instance AtsPretty CExpr where
     in  parenPrec p prec $ atsPrettyPrec m prec expr1
         <+> pretty op <+> atsPrettyPrec m (prec + 1) expr2
   atsPrettyPrec m p (CCast decl expr _) =
-    parenPrec p 25 $ text "(" <> pretty decl <> text ")"
-    <+> atsPrettyPrec m 25 expr
+    atsPrettyPrec m 25 expr
   atsPrettyPrec m p (CUnary CPostIncOp expr _) =
     parenPrec p 26 $ atsPrettyPrec m 26 expr <> text "++"
   atsPrettyPrec m p (CUnary CPostDecOp expr _) =
@@ -355,23 +354,23 @@ instance AtsPretty CExpr where
   atsPrettyPrec m p (CUnary op expr _) =
     parenPrec p 25 $ pretty op <> atsPrettyPrec m 25 expr
   atsPrettyPrec m p (CSizeofExpr expr _) =
-    parenPrec p 25 $ text "sizeof" <> parens (pretty expr)
+    parenPrec p 25 $ text "sizeof" <> parens (atsPretty m expr)
   atsPrettyPrec m p (CSizeofType decl _) =
     parenPrec p 25 $ text "sizeof" <> parens (atsPretty m decl)
   atsPrettyPrec m p (CAlignofExpr expr _) =
-    parenPrec p 25 $ text "__alignof" <> parens (pretty expr)
+    parenPrec p 25 $ text "__alignof" <> parens (atsPretty m expr)
   atsPrettyPrec m p (CAlignofType decl _) =
-    parenPrec p 25 $ text "__alignof" <> parens (pretty decl)
+    parenPrec p 25 $ text "__alignof" <> parens (atsPretty m decl)
   atsPrettyPrec m p (CComplexReal expr _) =
     parenPrec p 25 $ text "__real" <+> atsPrettyPrec m 25 expr
   atsPrettyPrec m p (CComplexImag expr _) =
     parenPrec p 25 $ text "__imag" <+> atsPrettyPrec m 25 expr
   atsPrettyPrec m p (CIndex expr1 expr2 _) =
     parenPrec p 26 $ atsPrettyPrec m 26 expr1
-    <> text "[" <> pretty expr2 <> text "]"
+    <> text "[" <> atsPretty m expr2 <> text "]"
   atsPrettyPrec m p (CCall expr args _) =
     parenPrec p 30 $ atsPrettyPrec m 30 expr <> text "("
-    <> (sep . punctuate comma . map pretty) args <> text ")"
+    <> (sep . punctuate comma . map (atsPretty m)) args <> text ")"
   atsPrettyPrec m p (CMember expr ident deref _) =
     parenPrec p 26 $ atsPrettyPrec m 26 expr
     <> text (if deref then "->" else ".") <> identP ident
@@ -407,19 +406,42 @@ binPrec CLndOp = 12
 binPrec CLorOp = 11
 
 instance AtsPretty CDecl where
- atsPretty m (CDecl [CTypeSpec t] _ _)= atsPretty m t
- atsPretty m t = pretty t
+ atsPretty m (CDecl t _ _) = atsPretty m t
 
-instance AtsPretty CTypeSpec where
-  atsPretty m (CVoidType _)        = text "ptr"
-  atsPretty m (CCharType _)        = text "char"
-  atsPretty m (CShortType _)       = text "short"
-  atsPretty m (CIntType _)         = text "int"
-  atsPretty m (CFloatType _)       = text "float"
-  atsPretty m (CDoubleType _)      = text "double"
-  atsPretty m (CBoolType _)        = text "bool"
-  atsPretty m (CEnumType enum _)   = text "int"
-  atsPretty m (CTypeDef ident _)   = identP ident
+instance AtsPretty [CDeclarationSpecifier NodeInfo] where
+  atsPretty m [(CTypeSpec (CVoidType _))]        = text "ptr"
+  atsPretty m [(CTypeSpec (CCharType _))]        = text "char"
+  atsPretty m [(CTypeSpec (CShortType _))]       = text "short"
+  atsPretty m [(CTypeSpec (CIntType _))]         = text "int"
+  atsPretty m [(CTypeSpec (CFloatType _))]       = text "float"
+  atsPretty m [(CTypeSpec (CDoubleType _))]      = text "double"
+  atsPretty m [(CTypeSpec (CBoolType _))]        = text "bool"
+  atsPretty m [(CTypeSpec (CEnumType enum _))]   = text "int"
+  atsPretty m [(CTypeSpec (CSignedType _)),
+               (CTypeSpec (CCharType _))]        = text "schar"
+  atsPretty m [(CTypeSpec (CUnsigType _)),
+               (CTypeSpec (CCharType _))]        = text "uchar"
+  atsPretty m [(CTypeSpec (CSignedType _)),
+               (CTypeSpec (CShortType _))]       = text "sint"
+  atsPretty m [(CTypeSpec (CUnsigType _)),
+               (CTypeSpec (CShortType _))]       = text "usint"
+  atsPretty m [(CTypeSpec (CUnsigType _)),
+               (CTypeSpec (CIntType _))]         = text "uint"
+  atsPretty m [(CTypeSpec (CLongType _)),
+               (CTypeSpec (CIntType _))]         = text "lint"
+  atsPretty m [(CTypeSpec (CUnsigType _)),
+               (CTypeSpec (CLongType _)),
+               (CTypeSpec (CIntType _))]         = text "ulint"
+  atsPretty m [(CTypeSpec (CLongType _)),
+               (CTypeSpec (CLongType _)),
+               (CTypeSpec (CIntType _))]         = text "llint"
+  atsPretty m [(CTypeSpec (CUnsigType _)),
+               (CTypeSpec (CLongType _)),
+               (CTypeSpec (CLongType _)),
+               (CTypeSpec (CIntType _))]         = text "ullint"
+  atsPretty m [(CTypeSpec (CLongType _)),
+               (CTypeSpec (CDoubleType _))]      = text "ldouble"
+  atsPretty m [(CTypeSpec (CTypeDef ident _))]   = atsPretty m ident
 
 --------------------------------------------------------------------------------
 class CPretty p where
