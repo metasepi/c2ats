@@ -10,6 +10,6 @@ test: all
 	./test_prog
 
 clean:
-	rm -f example.sats *_dats.c *.o
+	rm -f example.sats *_dats.c *.o test_prog
 
 .PHONY: all clean test
