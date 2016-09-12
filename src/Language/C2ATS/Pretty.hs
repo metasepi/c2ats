@@ -164,7 +164,7 @@ injectForwardDecl = fst . foldl f ([], Map.empty)
 forwardDecls :: [String] -> [FlatG]
 forwardDecls = map f
   where
-    f i = (NamedRef $ mkIdent nopos i (Name (-1)), FGRaw $ "abst@ype " ++ i)
+    f i = (NamedRef $ mkIdent nopos i (Name (-1)), FGRaw $ "abst@ype " ++ i ++ " // FIXME! Forward declaration.")
 
 identsAppend :: IndentsMap -> IndentsMap -> IndentsMap
 identsAppend (i_a@(Just _), is_a) (i_b, is_b) = (i_a, Map.union is_a is_b)
@@ -192,8 +192,8 @@ instance Idents VarDecl where
   idents (VarDecl _ _ t)             = idents t
 
 instance Idents TagDef where
-  idents (CompDef (CompType (NamedRef i) _ m _ _)) =
-    foldl (\a b -> a `identsAppend` idents b) (Just $ "struct_c2ats_" ++ identToString i, Map.empty) m
+  idents (CompDef (CompType (NamedRef i) k m _ _)) =
+    foldl (\a b -> a `identsAppend` idents b) (Just $ show k ++ "_c2ats_" ++ identToString i, Map.empty) m
   idents _                              = (Nothing, Map.empty)
 
 instance Idents TypeDef where
@@ -204,8 +204,8 @@ instance Idents Type where
   idents (PtrType t _ _)                               = idents t
   idents (ArrayType t _ _ _)                           = idents t
   idents (FunctionType ft _)                           = idents ft
-  idents (DirectType (TyComp (CompTypeRef (NamedRef i) _ _)) _ _) =
-    (Nothing, Map.singleton ("struct_c2ats_" ++ identToString i) ())
+  idents (DirectType (TyComp (CompTypeRef (NamedRef i) k _)) _ _) =
+    (Nothing, Map.singleton (show k ++ "_c2ats_" ++ identToString i) ())
   idents (TypeDefType (TypeDefRef i _ _) _ _)          =
     (Nothing, Map.singleton ("type_c2ats_" ++ identToString i) ())
   idents _                                             = (Nothing, Map.empty)
