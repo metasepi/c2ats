@@ -2,6 +2,7 @@
 module Language.C2ATS.Pretty
        ( atsPrettyGlobal
        , flatGlobal
+       , injectForwardDecl
        , sortFlatGlobal
        , splitFlatGlobal
        , preDefineGlobal
@@ -23,16 +24,19 @@ import Language.C.Data.Ident
 data FlatGlobalDecl = FGObj  IdentDecl
                     | FGTag  TagDef
                     | FGType TypeDef
+                    | FGRaw  String
 
 instance CNode FlatGlobalDecl where
   nodeInfo (FGObj  d) = nodeInfo d
   nodeInfo (FGTag  d) = nodeInfo d
   nodeInfo (FGType d) = nodeInfo d
+  nodeInfo (FGRaw  _) = undefNode
 
 instance Pretty FlatGlobalDecl where
   pretty (FGObj  d) = pretty d
   pretty (FGTag  d) = pretty d
   pretty (FGType d) = pretty d
+  pretty (FGRaw  s) = text s
 
 type FlatG = (SUERef, FlatGlobalDecl)
 
@@ -56,13 +60,13 @@ splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths
     filePaths :: [FlatG] -> [Maybe FilePath]
     filePaths = nub . map getFile
 
-predef_c2ats_gnuc_va_list = text "predef_c2ats_gnuc_va_list"
-predef_c2ats_any          = text "predef_c2ats_any"
+predef_c2ats_gnuc_va_list = "type_c2ats___gnuc_va_list"
+predef_c2ats_any          = "type_c2ats___any"
 
 preDefineGlobal :: Doc
 preDefineGlobal =
-  text "abst@ype" <+> predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
-  text "abst@ype" <+> predef_c2ats_any $+$          -- can't use in ATS
+  text "abst@ype" <+> text predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
+  text "abst@ype" <+> text predef_c2ats_any $+$          -- can't use in ATS
   text (unlines [
            "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
            "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
@@ -145,6 +149,77 @@ instance AnonRefs SUERef where
   anonRefs (NamedRef _)       = Map.empty
 
 --------------------------------------------------------------------------------
+type IndentsMap = (Maybe String, Map String ())
+
+injectForwardDecl :: [FlatG] -> [FlatG]
+injectForwardDecl = fst . foldl f ([], Map.empty)
+  where
+    f :: ([FlatG], Map String ()) -> FlatG -> ([FlatG], Map String ())
+    f (fgs, is) fg@(s,g) =
+      let (i, is') = idents g
+          fds      = trace (show (i, is', is)) $ forwardDecls $ Map.keys $ Map.difference is' is
+          is''     = Map.union is' $ maybe is (\a -> Map.insert a () is) i
+      in (fgs ++ fds ++ [fg], is'')
+
+forwardDecls :: [String] -> [FlatG]
+forwardDecls = map f
+  where
+    f i = (NamedRef $ mkIdent nopos i (Name (-1)), FGRaw $ "abst@ype " ++ i)
+
+identsAppend :: IndentsMap -> IndentsMap -> IndentsMap
+identsAppend (i_a@(Just _), is_a) (i_b, is_b) = (i_a, Map.union is_a is_b)
+identsAppend (Nothing, is_a) (i_b, is_b)      = (i_b, Map.union is_a is_b)
+
+class Idents p where
+  idents :: p -> IndentsMap
+
+instance Idents FlatGlobalDecl where
+  idents (FGObj  d) = idents d
+  idents (FGTag  d) = idents d
+  idents (FGType d) = idents d
+
+instance Idents IdentDecl where
+  idents (Declaration (Decl v _))             = idents v
+  idents (ObjectDef (ObjDef v _ _))           = idents v
+  idents (FunctionDef (FunDef v _ _))         = idents v
+  idents _                                    = (Nothing, Map.empty)
+
+instance Idents MemberDecl where
+  idents (MemberDecl v _ _)   = idents v
+  idents (AnonBitField t _ _) = idents t
+
+instance Idents VarDecl where
+  idents (VarDecl _ _ t)             = idents t
+
+instance Idents TagDef where
+  idents (CompDef (CompType (NamedRef i) _ m _ _)) =
+    foldl (\a b -> a `identsAppend` idents b) (Just $ "struct_c2ats_" ++ identToString i, Map.empty) m
+  idents _                              = (Nothing, Map.empty)
+
+instance Idents TypeDef where
+  idents (TypeDef i t _ _) =
+    (Just $ "type_c2ats_" ++ identToString i, Map.empty) `identsAppend` idents t
+
+instance Idents Type where
+  idents (PtrType t _ _)                               = idents t
+  idents (ArrayType t _ _ _)                           = idents t
+  idents (FunctionType ft _)                           = idents ft
+  idents (DirectType (TyComp (CompTypeRef (NamedRef i) _ _)) _ _) =
+    (Nothing, Map.singleton ("struct_c2ats_" ++ identToString i) ())
+  idents (TypeDefType (TypeDefRef i _ _) _ _)          =
+    (Nothing, Map.singleton ("type_c2ats_" ++ identToString i) ())
+  idents _                                             = (Nothing, Map.empty)
+
+instance Idents FunType where
+  idents (FunTypeIncomplete t) = idents t
+  idents (FunType t pd _)      =
+    foldl (\a b -> a `identsAppend` idents b) (idents t) pd
+
+instance Idents ParamDecl where
+  idents (ParamDecl v _)         = idents v
+  idents (AbstractParamDecl v _) = idents v
+
+--------------------------------------------------------------------------------
 atsPrettyGlobal :: [FlatG] -> Doc
 atsPrettyGlobal m = (vcat . map f $ m)
   where
@@ -161,6 +236,7 @@ instance AtsPretty FlatGlobalDecl where
   atsPretty m (FGObj  d) = atsPretty m d
   atsPretty m (FGTag  d) = atsPretty m d
   atsPretty m (FGType d) = atsPretty m d
+  atsPretty m (FGRaw s)  = text s
 
 instance AtsPretty TypeDef where
   atsPretty m (TypeDef ident ty _ _) =
@@ -185,8 +261,8 @@ instance AtsPretty TypeName where
   atsPretty m (TyComplex _) =
     let msg = text "Not support TyComplex"
     in trace ("*** " ++ show msg) $ text "(*" <+> msg <+> text "*)"
-  atsPretty m (TyBuiltin TyVaList) = predef_c2ats_gnuc_va_list
-  atsPretty m (TyBuiltin TyAny)    = predef_c2ats_any
+  atsPretty m (TyBuiltin TyVaList) = text predef_c2ats_gnuc_va_list
+  atsPretty m (TyBuiltin TyAny)    = text predef_c2ats_any
   atsPretty m (TyIntegral t) = f t
     where
       f TyBool    = text "bool"
