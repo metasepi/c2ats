@@ -12,7 +12,7 @@ main = do
   let cmd:[fn] = args
   when (cmd /= "new") usage
   (files, globals) <- parseMyFile fn
-  let fglobal = splitFlatGlobal . injectForwardDecl . sortFlatGlobal . flatGlobal $ globals
   -- xxx Split with files
-  print preDefineGlobal >> mapM_ (\(f,g) -> putStrLn ("\n// File: " ++ (maybe "no file" id $ f)) >> (print . atsPrettyGlobal $ g)) fglobal
+  let global = injectForwardDecl . sortFlatGlobal . flatGlobal $ globals
+  print preDefineGlobal >> print (atsPrettyGlobal global)
   -- xxx Create sats files

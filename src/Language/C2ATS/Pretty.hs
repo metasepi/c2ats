@@ -517,7 +517,7 @@ instance AtsPretty [CDeclarationSpecifier NodeInfo] where
                (CTypeSpec (CIntType _))]         = text "ullint"
   atsPretty m [(CTypeSpec (CLongType _)),
                (CTypeSpec (CDoubleType _))]      = text "ldouble"
-  atsPretty m [(CTypeSpec (CTypeDef ident _))]   = atsPretty m ident
+  atsPretty m [(CTypeSpec (CTypeDef ident _))]   = text "type" <> atsPretty m ident
 
 --------------------------------------------------------------------------------
 class CPretty p where
