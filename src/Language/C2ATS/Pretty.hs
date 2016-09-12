@@ -157,8 +157,9 @@ injectForwardDecl = fst . foldl f ([], Map.empty)
     f :: ([FlatG], Map String ()) -> FlatG -> ([FlatG], Map String ())
     f (fgs, is) fg@(s,g) =
       let (i, is') = idents g
-          fds      = trace (show (i, is', is)) $ forwardDecls $ Map.keys $ Map.difference is' is
-          is''     = Map.union is' $ maybe is (\a -> Map.insert a () is) i
+          knownis  = maybe is (\a -> Map.insert a () is) i
+          fds      = trace (show (i, is', is)) $ forwardDecls $ Map.keys $ Map.difference is' knownis
+          is''     = Map.union is' knownis
       in (fgs ++ fds ++ [fg], is'')
 
 forwardDecls :: [String] -> [FlatG]
@@ -189,7 +190,7 @@ instance Idents MemberDecl where
   idents (AnonBitField t _ _) = idents t
 
 instance Idents VarDecl where
-  idents (VarDecl _ _ t)             = idents t
+  idents (VarDecl _ _ t) = idents t
 
 instance Idents TagDef where
   idents (CompDef (CompType (NamedRef i) k m _ _)) =
