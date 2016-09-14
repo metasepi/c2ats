@@ -79,15 +79,18 @@ type AtsPrettyMap = Map SUERef FlatGlobalDecl
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG]
-sortFlatGlobal = (\(a,b) -> a ++ b) . foldl go ([], []) . sortBy order
+sortFlatGlobal = (\(a,_,_,b) -> a ++ b) . foldl go ([], Map.empty, Map.empty, []) . sortBy order
   where
     order :: FlatG -> FlatG -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
-    go :: ([FlatG], [FlatG]) -> FlatG -> ([FlatG], [FlatG])
-    go (out, ks) fg =
-      let out' = out ++ if Map.null $ anons fg then fg : ks else []
-          ks'  = if Map.null $ anons fg then [] else fg : ks
-      in (out', ks')
+    go :: ([FlatG], Map Int (), Map Int (), [FlatG]) -> FlatG ->
+          ([FlatG], Map Int (), Map Int (), [FlatG])
+    go (out, knowns, deps, ks) fg@(s,_) =
+      let knowns' = Map.insert (nodeSUERef s) () knowns
+          deps'   = Map.difference (Map.union deps $ anons fg) knowns'
+          out'    = out ++ if Map.null deps' then fg : ks else []
+          ks'     = if Map.null deps' then [] else fg : ks
+      in (out', knowns', deps', ks')
     anons :: FlatG -> Map Int ()
     anons (_, g) = anonRefs g
 
