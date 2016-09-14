@@ -2,11 +2,13 @@ module Main where
 
 import Control.Monad (when)
 import System.Environment (getArgs)
+import System.IO (stderr, hPutStrLn)
+import System.Exit (exitFailure)
 import Language.C2ATS
 
 main :: IO ()
 main = do
-  let usage = error "Usage: c2ats new C_FILEPATH"
+  let usage = hPutStrLn stderr "Usage: c2ats new C_FILEPATH" >> exitFailure
   args <- getArgs
   when (length args /= 2) usage
   let cmd:[fn] = args
