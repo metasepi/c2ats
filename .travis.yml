@@ -9,8 +9,8 @@ before_install:
   - export PATH=${HOME}/.cabal/bin:${PATH}
 
 script:
-  - cabal install
-  - (cd example/complex && make test)
+  - make
+  - make test
 
 after_script:
   - date
