@@ -10,4 +10,4 @@ clean:
 	cabal clean
 	$(foreach i,$(SUBDIRS),$(MAKE) -C $i $@ &&) true
 
-.PHONY: all test clean
+.PHONY: install all test clean
