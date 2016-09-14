@@ -3,6 +3,7 @@ dist: trusty
 
 before_install:
   - date
+  - gcc --version
   - sudo apt-get -qq -y install haskell-platform cabal-install
   - cabal update
   - export PATH=${HOME}/.cabal/bin:${PATH}
