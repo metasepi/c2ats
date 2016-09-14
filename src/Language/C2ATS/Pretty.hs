@@ -158,7 +158,7 @@ injectForwardDecl = fst . foldl f ([], Map.empty)
     f (fgs, is) fg@(s,g) =
       let (i, is') = idents g
           knownis  = maybe is (\a -> Map.insert a () is) i
-          fds      = trace (show (i, is', is)) $ forwardDecls $ Map.keys $ Map.difference is' knownis
+          fds      = forwardDecls $ Map.keys $ Map.difference is' knownis
           is''     = Map.union is' knownis
       in (fgs ++ fds ++ [fg], is'')
 
@@ -195,6 +195,8 @@ instance Idents VarDecl where
 instance Idents TagDef where
   idents (CompDef (CompType (NamedRef i) k m _ _)) =
     foldl (\a b -> a `identsAppend` idents b) (Just $ show k ++ "_c2ats_" ++ identToString i, Map.empty) m
+  idents (CompDef (CompType (AnonymousRef _) _ m _ _)) =
+    foldl (\a b -> a `identsAppend` idents b) (Nothing, Map.empty) m
   idents _                              = (Nothing, Map.empty)
 
 instance Idents TypeDef where

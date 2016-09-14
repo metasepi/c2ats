@@ -9,7 +9,7 @@ before_install:
 
 script:
   - cabal install
-  - c2ats new example/complex/example.c
+  - (cd example/complex && make test)
 
 after_script:
   - date
