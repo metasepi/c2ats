@@ -28,6 +28,8 @@ fun my_fread {l:addr}{n:int | n > 0}
 
   val r = fun_c2ats_fread (pffp | pbuf, 1UL, $UN.cast2ulint len, fp)
   val r = $UN.cast2size r
+  val pbufr = add_ptr_bsz (pbuf, r)
+  val () = if r < len then $UN.ptr0_set<char>(pbufr, '\0')
 
   val ret = (r, buf)
 }
