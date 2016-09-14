@@ -1,9 +1,9 @@
 all: test_prog
 
 test_prog: main.dats example.sats
-	patscc -o $@ $< -DATS_MEMALLOC_LIBC
+	patscc -o $@ $< -DATS_MEMALLOC_LIBC -Wno-implicit-int
 
-example.sats: example.c
+example.sats: example.h
 	c2ats new $< > $@
 
 test: all

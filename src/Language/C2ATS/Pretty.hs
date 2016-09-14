@@ -4,7 +4,7 @@ module Language.C2ATS.Pretty
        , flatGlobal
        , injectForwardDecl
        , sortFlatGlobal
-       , splitFlatGlobal
+       , injectIncludes
        , preDefineGlobal
        , AtsPretty (..)
        , CPretty (..)
@@ -47,8 +47,9 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
     theObjs     = Map.assocs $ Map.map FGObj  $ Map.mapKeys NamedRef $ gObjs gmap
     theTypeDefs = Map.assocs $ Map.map FGType $ Map.mapKeys NamedRef $ gTypeDefs gmap
 
-splitFlatGlobal :: [FlatG] -> [(Maybe FilePath, [FlatG])]
-splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths m
+injectIncludes :: [String] -> [FlatG] -> [FlatG]
+injectIncludes noincs m =
+  concat . map (\a -> incl a $ filter (\b -> a == getFile b) m) $ filePaths m
   where
     f :: String -> Maybe FilePath
     f "<no file>"  = Nothing
@@ -59,6 +60,16 @@ splitFlatGlobal m = map (\a -> (a, filter (\b -> a == getFile b) m)) $ filePaths
     getFile = f . show . posOfNode . nodeInfo . snd
     filePaths :: [FlatG] -> [Maybe FilePath]
     filePaths = nub . map getFile
+    incl :: Maybe String -> [FlatG] -> [FlatG]
+    incl (Nothing) fgs@((s,_):_) = (s, FGRaw $ "// No file"):fgs
+    incl (Just n) fgs@((s,_):_) | not . or $ map (flip isPrefixOf n) noincs =
+      (s, FGRaw $ init $ unlines [
+          "// File: " ++ n,
+          "%{#",
+          "#include \"" ++ n ++ "\"",
+          "%}"
+          ]):fgs
+    incl (Just n) fgs@((s,_):_)  = (s, FGRaw $ "// File: " ++ n):fgs
 
 predef_c2ats_gnuc_va_list = "type_c2ats___gnuc_va_list"
 predef_c2ats_any          = "type_c2ats___any"
@@ -67,12 +78,13 @@ preDefineGlobal :: Doc
 preDefineGlobal =
   text "abst@ype" <+> text predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
   text "abst@ype" <+> text predef_c2ats_any $+$          -- can't use in ATS
-  text (unlines [
+  text (init $ unlines [
            "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
            "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
            "  | ptr_v_2_cons(a, l0, l1) of (ptr l1 @ l0, ptr_v_1 (a, l1))",
            "dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =",
            "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
+           -- Need dataview ptr_v_4, and more?
            ])
 
 type AtsPrettyMap = Map SUERef FlatGlobalDecl
@@ -181,6 +193,7 @@ instance Idents FlatGlobalDecl where
   idents (FGObj  d) = idents d
   idents (FGTag  d) = idents d
   idents (FGType d) = idents d
+  idents (FGRaw  _) = (Nothing, Map.empty)
 
 instance Idents IdentDecl where
   idents (Declaration (Decl v _))             = idents v

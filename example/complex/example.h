@@ -51,4 +51,3 @@ enum e2 {
 struct {
   void (*f)(enum e2, int[2][3], struct t2);
 };
-int main() { printf("%d\n",1); }
