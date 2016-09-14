@@ -28,7 +28,6 @@ script:
   - cd ${TRAVIS_BUILD_DIR}
   - make install
   - make all
-  - cat example/complex/example.sats
   - make test
 
 after_script:
