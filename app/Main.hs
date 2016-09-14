@@ -14,5 +14,6 @@ main = do
   (files, globals) <- parseMyFile fn
   let global = injectForwardDecl . injectIncludes [
         "/usr/lib/gcc/x86_64-linux-gnu/",
-        "/usr/include/x86_64-linux-gnu/"] . sortFlatGlobal . flatGlobal $ globals
+        "/usr/include/x86_64-linux-gnu/"
+        ] . sortFlatGlobal . flatGlobal $ globals
   print preDefineGlobal >> print (atsPrettyGlobal global)
