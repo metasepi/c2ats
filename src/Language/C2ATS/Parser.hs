@@ -10,10 +10,9 @@ import Language.C
 import Language.C.Analysis
 import Language.C.System.GCC
 
-parseMkGlobal :: FilePath -> IO ([FilePath], GlobalDecls)
-parseMkGlobal input_file = do
-  let compiler = newGCC "gcc"
-      opts = []
+parseMkGlobal :: String -> [String] -> FilePath -> IO ([FilePath], GlobalDecls)
+parseMkGlobal gcc opts input_file = do
+  let compiler = newGCC gcc
   ast <- parseCFile compiler Nothing opts input_file >>= checkResult "[parsing]"
   (globals, warnings) <- (runTrav_ >>> checkResult "[analysis]") $ analyseAST ast
   mapM_ (hPutStrLn stderr . show) warnings

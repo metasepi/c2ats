@@ -4,7 +4,7 @@ test_prog: main.dats example.sats
 	patscc -o $@ $< -DATS_MEMALLOC_LIBC
 
 example.sats: example.h
-	c2ats new $< > $@
+	c2ats gen $< > $@
 
 test: all
 	./test_prog

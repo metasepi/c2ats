@@ -6,14 +6,22 @@ import System.IO (stderr, hPutStrLn)
 import System.Exit (exitFailure)
 import Language.C2ATS
 
+getOpts :: [String] -> (String, [String])
+getOpts (gcc:copts) = (gcc, copts)
+getOpts []          = ("gcc", [])
+
 main :: IO ()
 main = do
-  let usage = hPutStrLn stderr "Usage: c2ats new C_FILEPATH" >> exitFailure
+  let usage = hPutStrLn stderr
+                "Usage: c2ats gen C_HEADER_PATH [GCC_PATH [COMPILE_OPTS...]]"
+                >> exitFailure
   args <- getArgs
-  when (length args /= 2) usage
-  let cmd:[fn] = args
-  when (cmd /= "new") usage
-  (files, globals) <- parseMkGlobal fn
+  when (length args < 2) usage
+  let cmd:fn:opts = args
+  when (cmd /= "gen") usage
+  let (gcc, copts) = getOpts opts
+
+  (files, globals) <- parseMkGlobal gcc copts fn
   let global = injectForwardDecl . injectIncludes [
         "/usr/lib/gcc/x86_64-linux-gnu/",
         "/usr/include/x86_64-linux-gnu/"
