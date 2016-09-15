@@ -6,7 +6,7 @@ before_install:
   - cat /proc/cpuinfo
   - cd ${HOME}
   # Install packges
-  - sudo apt-get -qq -y install libgmp-dev haskell-platform cabal-install
+  - sudo apt-get -qq -y install libgmp-dev haskell-platform cabal-install libgtk-3-dev
   - gcc --version
   - cabal update
   - export PATH=${HOME}/.cabal/bin:${PATH}
