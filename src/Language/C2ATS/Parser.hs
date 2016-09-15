@@ -1,5 +1,5 @@
 module Language.C2ATS.Parser
-       ( parseMyFile
+       ( parseMkGlobal
        , GlobalDecls
        ) where
 
@@ -10,8 +10,8 @@ import Language.C
 import Language.C.Analysis
 import Language.C.System.GCC
 
-parseMyFile :: FilePath -> IO ([FilePath], GlobalDecls)
-parseMyFile input_file = do
+parseMkGlobal :: FilePath -> IO ([FilePath], GlobalDecls)
+parseMkGlobal input_file = do
   let compiler = newGCC "gcc"
       opts = []
   ast <- parseCFile compiler Nothing opts input_file >>= checkResult "[parsing]"

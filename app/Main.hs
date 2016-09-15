@@ -13,7 +13,7 @@ main = do
   when (length args /= 2) usage
   let cmd:[fn] = args
   when (cmd /= "new") usage
-  (files, globals) <- parseMyFile fn
+  (files, globals) <- parseMkGlobal fn
   let global = injectForwardDecl . injectIncludes [
         "/usr/lib/gcc/x86_64-linux-gnu/",
         "/usr/include/x86_64-linux-gnu/"
