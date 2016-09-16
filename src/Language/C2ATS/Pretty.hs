@@ -218,7 +218,7 @@ instance AtsPretty IdentDecl where
   atsPretty m (FunctionDef (FunDef (VarDecl (VarName ident _) _ ty) _ _)) =
     text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
-    text "#define enum" <> atsPretty m i <+> pretty e
+    text "#define enum" <> atsPretty m i <+> atsPretty m e
 
 maybeP :: (p -> Doc) -> Maybe p -> Doc
 maybeP = maybe empty
@@ -237,6 +237,18 @@ instance AtsPretty CExpr where
   atsPrettyPrec m p (CCond expr1 expr2 expr3 _) =
     parenPrec p 2 $ atsPrettyPrec m 4 expr1 <+> text "?" -- NB: assignment only has a higher precedence if cond is on the rhs
     <+> maybeP pretty expr2 <+> text ":" <+> atsPrettyPrec m 4 expr3
+  atsPrettyPrec m p (CBinary op@COrOp expr1 expr2 _) =
+    let prec = binPrec op
+    in  parenPrec p prec $ atsPrettyPrec m prec expr1
+        <+> text "lor" <+> atsPrettyPrec m (prec + 1) expr2
+  atsPrettyPrec m p (CBinary op@CAndOp expr1 expr2 _) =
+    let prec = binPrec op
+    in  parenPrec p prec $ atsPrettyPrec m prec expr1
+        <+> text "land" <+> atsPrettyPrec m (prec + 1) expr2
+  atsPrettyPrec m p (CBinary op@CXorOp expr1 expr2 _) =
+    let prec = binPrec op
+    in  parenPrec p prec $ atsPrettyPrec m prec expr1
+        <+> text "lxor" <+> atsPrettyPrec m (prec + 1) expr2
   atsPrettyPrec m p (CBinary op expr1 expr2 _) =
     let prec = binPrec op
     in  parenPrec p prec $ atsPrettyPrec m prec expr1
@@ -247,6 +259,8 @@ instance AtsPretty CExpr where
     parenPrec p 26 $ atsPrettyPrec m 26 expr <> text "++"
   atsPrettyPrec m p (CUnary CPostDecOp expr _) =
     parenPrec p 26 $ atsPrettyPrec m 26 expr <> text "--"
+  atsPrettyPrec m p (CUnary CMinOp expr _) =
+    parenPrec p 25 $ text "~" <> atsPrettyPrec m 25 expr
   atsPrettyPrec m p (CUnary op expr@(CUnary _ _ _) _) =
     --                             parens aren't necessary, but look nicer imho
     parenPrec p 25 $ pretty op <+> parens (atsPrettyPrec m 25 expr)
@@ -274,6 +288,9 @@ instance AtsPretty CExpr where
     parenPrec p 26 $ atsPrettyPrec m 26 expr
     <> text (if deref then "->" else ".") <> identP ident
   atsPrettyPrec m _p (CVar ident _) = identP ident
+  atsPrettyPrec m _p (CConst (CCharConst (CChar '(' _) _)) = text "'\\('"
+  atsPrettyPrec m _p (CConst (CCharConst (CChar '{' _) _)) = text "'\\{'"
+  atsPrettyPrec m _p (CConst (CCharConst (CChar '[' _) _)) = text "'\\['"
   atsPrettyPrec m _p (CConst constant) = pretty constant
   atsPrettyPrec m _p (CCompoundLit decl initl _) =
     parens (pretty decl) <+> (braces . hsep . punctuate comma) (map p initl) where
