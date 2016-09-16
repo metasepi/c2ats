@@ -19,7 +19,7 @@ all test:
 	$(foreach i,$(SUBDIRS),$(MAKE) -C $i $@ &&) true
 
 clean:
-	cabal clean
+	stack clean
 	$(foreach i,$(SUBDIRS),$(MAKE) -C $i $@ &&) true
 
 .PHONY: build install build_prof run_prof cabal_install all test clean
