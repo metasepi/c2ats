@@ -73,7 +73,7 @@ injectIncludes noincs m =
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG]
-sortFlatGlobal = (\(a,_,_,b) -> a ++ b) . foldl go ([], Map.empty, Map.empty, []) . sortBy order
+sortFlatGlobal = (\(a,_,_,b) -> reverse a ++ b) . foldl go ([], Map.empty, Map.empty, []) . sortBy order
   where
     order :: FlatG -> FlatG -> Ordering
     order (_, a) (_, b) = nodeInfo a `compare` nodeInfo b
@@ -82,7 +82,7 @@ sortFlatGlobal = (\(a,_,_,b) -> a ++ b) . foldl go ([], Map.empty, Map.empty, []
     go (out, knowns, deps, ks) fg@(s,_) =
       let knowns' = Map.insert (nodeSUERef s) () knowns
           deps'   = Map.difference (Map.union deps $ anons fg) knowns'
-          out'    = out ++ if Map.null deps' then fg : ks else []
+          out'    = (if Map.null deps' then reverse ks ++ [fg] else []) ++ out
           ks'     = if Map.null deps' then [] else fg : ks
       in (out', knowns', deps', ks')
     anons :: FlatG -> Map Int ()
