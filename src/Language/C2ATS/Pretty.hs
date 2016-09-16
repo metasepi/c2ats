@@ -199,14 +199,18 @@ instance AtsPretty CompType where
       atsPretty' md = punctuate (text ",") $ delete empty . map (atsPretty m) $ md
 
 instance AtsPretty MemberDecl where -- Ignore bit field
-  atsPretty m (MemberDecl (VarDecl name declattrs ty) _ _) =
-    pretty declattrs <+> pretty name <+> text "=" <+> atsPretty' m ty
+  atsPretty m (MemberDecl (VarDecl name _ ty) _ _) =
+    atsPretty m name <+> text "=" <+> atsPretty' m ty
     where
       atsPretty' :: AtsPrettyMap -> Type -> Doc
       atsPretty' m (PtrType (FunctionType t _) _ _) = atsPretty m t
       atsPretty' m (PtrType t _ _) = text "ptr (* cPtr0(" <> atsPretty m t <> text ") *)"
       atsPretty' m t = atsPretty m t
   atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
+
+instance AtsPretty VarName where
+  atsPretty m (VarName i _) = pretty i
+  atsPretty m NoName        = text "_c2ats_anonymous"
 
 instance AtsPretty IdentDecl where
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
