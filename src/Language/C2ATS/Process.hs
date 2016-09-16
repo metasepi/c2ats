@@ -8,6 +8,7 @@ module Language.C2ATS.Process
        , FlatG (..)
        ) where
 
+import Data.Maybe
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -39,27 +40,36 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
 
 injectIncludes :: [String] -> [FlatG] -> [FlatG]
 injectIncludes noincs m =
-  concat . map (\a -> incl a $ filter (\b -> a == getFile b) m) $ filePaths m
+  concat . map incl . map reverse . sortElems . foldl go ([], Map.empty) $ m
   where
     f :: String -> Maybe FilePath
-    f "<no file>"  = Nothing
-    f "<builtin>"  = Nothing
-    f "<internal>" = Nothing
-    f xs           = Just $ filter (\c -> c /= '"' && c /= ':' && c /= '(') . head . words $ xs
+    f ('<':_) = Nothing
+    f xs      = Just . filter (\c -> c /= '"' && c /= ':' && c /= '(') . head . words $ xs
     getFile :: FlatG -> Maybe FilePath
     getFile = f . show . posOfNode . nodeInfo . snd
-    filePaths :: [FlatG] -> [Maybe FilePath]
-    filePaths = nub . map getFile
-    incl :: Maybe String -> [FlatG] -> [FlatG]
-    incl (Nothing) fgs@((s,_):_) = (s, FGRaw $ "// No file"):fgs
-    incl (Just n) fgs@((s,_):_) | not . or $ map (flip isPrefixOf n) noincs =
-      (s, FGRaw $ init $ unlines [
-          "// File: " ++ n,
-          "%{#",
-          "#include \"" ++ n ++ "\"",
-          "%}"
-          ]):fgs
-    incl (Just n) fgs@((s,_):_)  = (s, FGRaw $ "// File: " ++ n):fgs
+    sortElems :: ([Maybe FilePath], Map (Maybe FilePath) [FlatG]) -> [[FlatG]]
+    sortElems (file:files,mp) =
+      sortElems (files, Map.delete file mp) ++ [fromJust $ Map.lookup file mp]
+    sortElems ([], _)         = []
+    go :: ([Maybe FilePath], Map (Maybe FilePath) [FlatG]) -> FlatG
+          -> ([Maybe FilePath], Map (Maybe FilePath) [FlatG])
+    go (files,mp) fg =
+      let file = getFile fg
+          files' = if file `elem` files then files else file:files
+      in (files', Map.insertWith (++) file [fg] mp)
+    incl :: [FlatG] -> [FlatG]
+    incl fgs@((s,fg):_) = case getFile (s,fg) of
+      Nothing ->
+        (s, FGRaw $ "// No file"):fgs
+      (Just file) | not . or $ map (flip isPrefixOf file) noincs ->
+        (s, FGRaw $ init $ unlines [
+            "// File: " ++ file,
+            "%{#",
+            "#include \"" ++ file ++ "\"",
+            "%}"
+            ]):fgs
+      (Just file) ->
+        (s, FGRaw $ "// File: " ++ file):fgs
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG]
