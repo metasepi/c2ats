@@ -149,7 +149,7 @@ instance AnonRefs SUERef where
 type IndentsMap = (Maybe String, Map String ())
 
 injectForwardDecl :: [FlatG] -> [FlatG]
-injectForwardDecl = fst . foldl f ([], Map.empty)
+injectForwardDecl = reverse . fst . foldl f ([], Map.empty)
   where
     f :: ([FlatG], Map String ()) -> FlatG -> ([FlatG], Map String ())
     f (fgs, is) fg@(s,g) =
@@ -157,7 +157,7 @@ injectForwardDecl = fst . foldl f ([], Map.empty)
           knownis  = maybe is (\a -> Map.insert a () is) i
           fds      = forwardDecls $ Map.keys $ Map.difference is' knownis
           is''     = Map.union is' knownis
-      in (fgs ++ fds ++ [fg], is'')
+      in (fg : fds ++ fgs, is'')
 
 forwardDecls :: [String] -> [FlatG]
 forwardDecls = map f
