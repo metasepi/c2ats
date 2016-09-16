@@ -2,7 +2,7 @@
 
 ## What's this?
 
-ATS is a statically typed programming language that unifies implementation with formal specification. It can powerfully capture invariant in program.
+[ATS](http://www.ats-lang.org/) is a statically typed programming language that unifies implementation with formal specification. It can powerfully capture invariant in program.
 
 However, don't you feel frustration to use API of many C language libraries from ATS code? Don't you manually import such API into ATS code?
 
@@ -11,7 +11,7 @@ The c2ats is a utility to generate ATS's sats file importing from C language hea
 ## Requirements
 
 * [GCC](https://gcc.gnu.org/) to parse C language header
-* [cabal](https://www.haskell.org/cabal/) or [stack](https://haskellstack.org/) to build Haskell code
+* [cabal](https://www.haskell.org/cabal/) or [stack](https://haskellstack.org/) to build [Haskell](https://www.haskell.org/) code
 
 We are testing this tool on [Debian GNU/Linux](https://www.debian.org/).
 
