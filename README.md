@@ -1,1 +1,119 @@
 # c2ats - generate ATS interface from C code [![Build Status](https://travis-ci.org/metasepi/c2ats.svg)](https://travis-ci.org/metasepi/c2ats)
+
+## What's this?
+
+ATS is a statically typed programming language that unifies implementation with formal specification. It can powerfully capture invariant in program.
+
+However, don't you feel frustration to use API of many C language libraries from ATS code? Don't you manually import such API into ATS code?
+
+The c2ats is a utility to generate ATS's sats file importing from C language header, semi-automatically.
+
+## Requirements
+
+* [GCC](https://gcc.gnu.org/) to parse C language header
+* [cabal](https://www.haskell.org/cabal/) or [stack](https://haskellstack.org/) to build Haskell code
+
+We are testing this tool on [Debian GNU/Linux](https://www.debian.org/).
+
+## Install
+
+Checkout source code of the c2ats:
+
+```
+$ git clone https://github.com/metasepi/c2ats.git
+$ cd c2ats
+```
+
+Then install using cabal:
+
+```
+$ cabal install
+$ which c2ats
+/home/YourName/.cabal/bin/c2ats
+```
+
+or install using stack:
+
+```
+$ stack install
+$ which c2ats
+/home/YourName/.local/bin/c2ats
+```
+
+## Usage
+
+Start from [Hello World example](./example/hello). Create following fake C language header to use `printf(3)` function in C language:
+
+```
+$ vi example.h
+#include <stdio.h>
+```
+
+Next, let the c2ats to generate ATS sats file from above header:
+
+```
+$ c2ats gen example.h > example.sats
+$ wc -l example.sats
+318 example.sats
+$ grep _printf example.sats
+fun fun_c2ats_printf: {l1:addr} (!ptr_v_1(char, l1) | ptr l1) -> int = "mac#printf"
+```
+
+The sats file has many ATS declarations generated from the C header. It includes a declaration of `printf(3)` which can be used as following in dats:
+
+```
+$ vi main.dats
+#include "share/atspre_define.hats"
+#include "share/atspre_staload.hats"
+
+staload UN = "prelude/SATS/unsafe.sats"
+
+staload "example.sats"
+
+fun my_printf (s: string): void = {
+  val p = string2ptr s
+  val (pfat, fpfat | p) = $UN.ptr_vtake p
+  val ret = fun_c2ats_printf (pfat | p)
+  prval () = fpfat pfat
+}
+
+implement main0 () = {
+  val s = "Hello, world!\n"
+  val () = my_printf s
+}
+$ patscc main.dats
+$ ./a.out
+Hello, world!
+```
+
+Of course, above code is so messy. It's caused by assigning a bad signature to `fun_c2ats_printf` function. You can get better dats code, if modify sats file as following:
+
+```
+$ vi example.sats
+--snip--
+fun fun_c2ats_printf: (string) -> int = "mac#printf"
+--snip--
+$ vi main.dats
+#include "share/atspre_define.hats"
+#include "share/atspre_staload.hats"
+
+staload UN = "prelude/SATS/unsafe.sats"
+
+staload "example.sats"
+
+implement main0 () = {
+  val s = "Hello, world!\n"
+  val _ = fun_c2ats_printf s
+}
+$ patscc main.dats
+$ ./a.out
+Hello, world!
+```
+
+Totally, the c2ats generates a scaffold to build ATS application. Sometimes, it's useful to create application rapidly. However, such scaffold should be replaced with better signature until shipping your product.
+
+The other examples are found at [example](./example/) directory.
+
+## License
+
+GPLv3 or later.
