@@ -2,7 +2,6 @@
 module Language.C2ATS.Pretty
        ( atsPrettyGlobal
        , preDefineGlobal
-       , postDefineGlobal
        , AtsPretty (..)
        , CPretty (..)
        ) where
@@ -28,26 +27,20 @@ instance Pretty FlatGlobalDecl where
 predef_c2ats_gnuc_va_list = "type_c2ats___gnuc_va_list"
 predef_c2ats_any          = "type_c2ats___any"
 
-preDefineGlobal :: Doc
-preDefineGlobal =
-  text "abst@ype" <+> text predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
-  text "abst@ype" <+> text predef_c2ats_any $+$          -- can't use in ATS
-  text (init $ unlines [
-           "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
-           "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
-           "  | ptr_v_2_cons(a, l0, l1) of (ptr l1 @ l0, ptr_v_1 (a, l1))",
-           "dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =",
-           "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
-           -- Need dataview ptr_v_4, and more?
-           ])
-
-postDefineGlobal :: FilePath -> IO Doc
-postDefineGlobal f = do
+preDefineGlobal :: FilePath -> IO Doc
+preDefineGlobal f = do
   s <- readFile f
-  if "gtk/gtk.h" `isInfixOf` s
-    then return $ text "// File: gtk/gtk.h" $+$ text "%{#" $+$
-                  text "#include <gtk/gtk.h>" $+$ text "%}"
-    else return empty
+  return $ text ("// File: " ++ f) $+$ text "%{#" $+$ text s $+$ text "%}" $+$
+    text "abst@ype" <+> text predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
+    text "abst@ype" <+> text predef_c2ats_any $+$          -- can't use in ATS
+    text (init $ unlines [
+             "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
+             "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
+             "  | ptr_v_2_cons(a, l0, l1) of (ptr l1 @ l0, ptr_v_1 (a, l1))",
+             "dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =",
+             "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
+             -- Need dataview ptr_v_4, and more?
+             ])
 
 --------------------------------------------------------------------------------
 type AtsPrettyMap = Map SUERef FlatGlobalDecl

@@ -35,4 +35,4 @@ main = do
                  "^/usr/lib/gcc/x86_64-linux-gnu/",
                  "^/usr/lib/x86_64-linux-gnu/glib-2.0/"
                ] . sortFlatGlobal . flatGlobal $ globals
-  print preDefineGlobal >> print (atsPrettyGlobal global) >> postDefineGlobal fn >>= print
+  preDefineGlobal fn >>= print >> print (atsPrettyGlobal global)
