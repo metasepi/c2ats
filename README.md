@@ -110,7 +110,7 @@ $ ./a.out
 Hello, world!
 ```
 
-Totally, the c2ats generates a scaffold to build ATS application. Sometimes, it's useful to create application rapidly. However, such scaffold should be replaced with better signature until shipping your product.
+Totally, the c2ats generates a scaffold (you may be familiar with [Ruby on Rails](http://rubyonrails.org/)) to build ATS application. Sometimes, it's useful to create application rapidly. However, such scaffold should be replaced with better signature until shipping your product.
 
 The other examples are found at [example](./example/) directory.
 
