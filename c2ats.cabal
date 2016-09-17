@@ -1,5 +1,5 @@
 name:                c2ats
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            Translate C code into ATS
 description:         Please see README.md
 homepage:            https://github.com/metasepi/c2ats#readme
