@@ -17,7 +17,7 @@ fun{} take_gcharp2tr (s: string):
   val ret = $UN.ptr_vtake p
 }
 
-fun print_hello {l:addr} (pfgtkw: !type_c2ats_GtkWidget@l, p: type_c2ats_gpointer):void =
+fun print_hello {l:addr} (pfgtkw: !type_c2ats_GtkWidget@l, p: type_c2ats_gpointer): void =
   println! "Hello World"
 
 fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
