@@ -196,16 +196,24 @@ instance AtsPretty CompType where
       ext (NamedRef ident) = atsPretty m tag <+> pretty ident
       ext (AnonymousRef _) = atsPretty m tag <+> text "{" <+> hcat (map (cPretty m) members) <> text "}"
       atsPretty' :: [MemberDecl] -> [Doc]
-      atsPretty' md = punctuate (text ",") $ delete empty . map (atsPretty m) $ md
+      atsPretty' md =
+        punctuate (text ",") $ filter (not . isEmpty) . map (atsPretty m) $ md
 
 instance AtsPretty MemberDecl where -- Ignore bit field
   atsPretty m (MemberDecl (VarDecl name _ ty) _ _) =
-    atsPretty m name <+> text "=" <+> atsPretty' m ty
+    if keyword name then empty else atsPretty m name <+> text "=" <+> atsPretty' m ty
     where
       atsPretty' :: AtsPrettyMap -> Type -> Doc
       atsPretty' m (PtrType (FunctionType t _) _ _) = atsPretty m t
       atsPretty' m (PtrType t _ _) = text "ptr (* cPtr0(" <> atsPretty m t <> text ") *)"
       atsPretty' m t = atsPretty m t
+      -- xxx `keyword` func should be remove! https://github.com/metasepi/c2ats/issues/7
+      keyword :: VarName -> Bool
+      keyword (VarName (Ident "begin" _ _) _)  = True
+      keyword (VarName (Ident "end" _ _) _)    = True
+      keyword (VarName (Ident "in" _ _) _)     = True
+      keyword (VarName (Ident "prefix" _ _) _) = True
+      keyword _                                = False
   atsPretty m (AnonBitField ty _ _) = empty -- Ignore AnonBitField
 
 instance AtsPretty VarName where
