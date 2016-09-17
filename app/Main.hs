@@ -23,7 +23,13 @@ main = do
 
   (files, globals) <- parseMkGlobal gcc copts fn
   let global = injectForwardDecl . injectIncludes [
+        "/usr/include/glib-2.0/gio/",
+        "/usr/include/glib-2.0/glib/",
+        "/usr/include/glib-2.0/gobject/",
+        "/usr/include/gtk-3.0/gdk/",
+        "/usr/include/gtk-3.0/gtk/",
+        "/usr/include/x86_64-linux-gnu/",
         "/usr/lib/gcc/x86_64-linux-gnu/",
-        "/usr/include/x86_64-linux-gnu/"
+        "/usr/lib/x86_64-linux-gnu/glib-2.0/"
         ] . sortFlatGlobal . flatGlobal $ globals
   print preDefineGlobal >> print (atsPrettyGlobal global)
