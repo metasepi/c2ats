@@ -2,6 +2,7 @@
 module Language.C2ATS.Pretty
        ( atsPrettyGlobal
        , preDefineGlobal
+       , postDefineGlobal
        , AtsPretty (..)
        , CPretty (..)
        ) where
@@ -39,6 +40,14 @@ preDefineGlobal =
            "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
            -- Need dataview ptr_v_4, and more?
            ])
+
+postDefineGlobal :: FilePath -> IO Doc
+postDefineGlobal f = do
+  s <- readFile f
+  if "gtk/gtk.h" `isInfixOf` s
+    then return $ text "// File: gtk/gtk.h" $+$ text "%{#" $+$
+                  text "#include <gtk/gtk.h>" $+$ text "%}"
+    else return empty
 
 --------------------------------------------------------------------------------
 type AtsPrettyMap = Map SUERef FlatGlobalDecl

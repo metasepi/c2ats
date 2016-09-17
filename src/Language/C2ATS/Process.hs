@@ -14,6 +14,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Text.Regex.Posix
 import Debug.Trace {- for warnings -}
 
 import Language.C
@@ -40,8 +41,8 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
     theObjs     = Map.assocs $ Map.map FGObj  $ Map.mapKeys NamedRef $ gObjs gmap
     theTypeDefs = Map.assocs $ Map.map FGType $ Map.mapKeys NamedRef $ gTypeDefs gmap
 
-injectIncludes :: [String] -> [FlatG] -> [FlatG]
-injectIncludes noincs m =
+injectIncludes :: [String] -> [String] -> [FlatG] -> [FlatG]
+injectIncludes includes excludes m =
   concat . map incl . map reverse . sortElems . foldl go ([], Map.empty) $ m
   where
     f :: String -> Maybe FilePath
@@ -63,7 +64,7 @@ injectIncludes noincs m =
     incl fgs@((s,fg):_) = case getFile (s,fg) of
       Nothing ->
         (s, FGRaw $ "// No file"):fgs
-      (Just file) | not . or $ map (flip isPrefixOf file) noincs ->
+      (Just file) | (or $ map (=~ file) includes) || (not . or $ map ((=~) file) excludes) ->
         (s, FGRaw $ init $ unlines [
             "// File: " ++ file,
             "%{#",
