@@ -6,7 +6,7 @@
 
 However, don't you feel frustration to use API of many C language libraries from ATS code? Don't you manually import such API into ATS code?
 
-The c2ats is a utility to generate ATS's sats file importing from C language header, semi-automatically.
+The c2ats is an utility to generate ATS's sats file importing from C language header, semi-automatically.
 
 ## Requirements
 
