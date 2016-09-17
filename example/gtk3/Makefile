@@ -7,7 +7,7 @@ example.sats: example.h
 	c2ats gen $< gcc `pkg-config --cflags gtk+-3.0` > $@
 
 test: all
-	./test_prog
+	@echo "run ./test_prog manually..."
 
 clean:
 	rm -f example.sats *_dats.c *.o test_prog
