@@ -1,6 +1,6 @@
 name:                c2ats
 version:             0.1.0.1
-synopsis:            Translate C code into ATS
+synopsis:            An utility to generate ATS interface from C code
 description:         Please see README.md
 homepage:            https://github.com/metasepi/c2ats#readme
 license:             GPL-3
