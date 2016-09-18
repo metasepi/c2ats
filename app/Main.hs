@@ -4,14 +4,20 @@ import Control.Monad (when)
 import System.Environment (getArgs)
 import System.IO (stderr, hPutStrLn)
 import System.Exit (exitFailure)
-import System.Console.GetOpt
+import Data.Version (showVersion)
 import Language.C2ATS
-
+import Paths_c2ats (version)
 
 usage :: IO ()
-usage =
-  hPutStrLn stderr "Usage: c2ats gen C_HEADER_PATH [GCC_PATH [COMPILE_OPTS...]]"
-  >> exitFailure
+usage = hPutStrLn stderr msg >> exitFailure
+  where
+    msg = init $ unlines [
+      "Usage: c2ats (gen | version)",
+      "",
+      "Available commands:",
+      "  gen C_HEADER_PATH [GCC_PATH [COMPILE_OPTS...]]",
+      "  version"
+      ]
 
 getOpts :: [String] -> (String, [String])
 getOpts (gcc:copts) = (gcc, copts)
@@ -31,11 +37,16 @@ subcmdGen args = do
                ] . sortFlatGlobal . flatGlobal $ globals
   preDefineGlobal fn >>= print >> print (atsPrettyGlobal global)
 
+subcmdVer :: [String] -> IO ()
+subcmdVer _ =
+  putStrLn $ "c2ats version " ++ showVersion version ++ " with Copyright (c) 2016 Metasepi team"
+
 main :: IO ()
 main = do
   args <- getArgs
   when (length args < 1) usage
   let subcmd:opts = args
   case subcmd of
-   "gen" -> subcmdGen opts
-   _     -> usage
+   "gen"     -> subcmdGen opts
+   "version" -> subcmdVer opts
+   _         -> usage
