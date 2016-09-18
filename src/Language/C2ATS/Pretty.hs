@@ -227,15 +227,27 @@ instance AtsPretty VarName where
 getPointer :: Type -> Type
 getPointer t = PtrType t noTypeQuals []
 
+prettyIdentDeclFunc :: AtsPretty p => AtsPrettyMap -> Ident -> p -> Doc
+prettyIdentDeclFunc m ident ty =
+  text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty
+  <+> text "= \"mac#" <> pretty ident <> text "\""
+
+prettyIdentDeclObj :: AtsPrettyMap -> Ident -> Type -> Doc
+prettyIdentDeclObj m ident ty =
+  text "macdef extval" <> atsPretty m ident <+> text "= $extval(["
+  <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
+  <> text ":addr] (" <> atviewShow m (getPointer ty) 1 <+> text "| ptr l1), \""
+  <> text "&" <> pretty ident <> text "\")"
+
 instance AtsPretty IdentDecl where
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
-    text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+    prettyIdentDeclFunc m ident ty
+  atsPretty m (FunctionDef (FunDef (VarDecl (VarName ident _) _ ty) _ _)) =
+    prettyIdentDeclFunc m ident ty
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ ty) _)) =
-    text "macdef extval" <> atsPretty m ident <+> text "= $extval(["
-    <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
-    <> text ":addr] ("
-    <> atviewShow m (getPointer ty) 1
-    <+> text "| ptr l1), \"" <> text "&" <> pretty ident <> text "\")"
+    prettyIdentDeclObj m ident ty
+  atsPretty m (ObjectDef (ObjDef (VarDecl (VarName ident _) _ ty) _ _)) =
+    prettyIdentDeclObj m ident ty
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
     text "#define enum" <> atsPretty m i <+> atsPretty m e
 
