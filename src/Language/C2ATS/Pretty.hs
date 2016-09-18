@@ -128,6 +128,20 @@ instance AtsPretty ArraySize where
 instance AtsPretty TypeDefRef where
   atsPretty m (TypeDefRef ident _ _) = atsPretty m ident
 
+atviewToList :: AtsPrettyMap -> Type -> (Int, Int) -> [Doc] -> [Doc]
+atviewToList m (PtrType (FunctionType t _) _ _) _ d      = (atsPretty m t) : d
+atviewToList m (PtrType (DirectType TyVoid _ _) _ _) _ d = text "ptr" : d
+atviewToList m (PtrType t _ _) (i,j) d                   =
+  let minor = if j == 0 then empty else text "_" <> int j
+  in atviewToList m t (i,j+1) (d ++ [text "l" <> int i <> minor])
+atviewToList m t _ d                                     = (atsPretty m t) : d
+
+atviewShow :: AtsPrettyMap -> Type -> Int -> Doc
+atviewShow m t n =
+  let l = atviewToList m t (n, 0) []
+  in text "ptr_v_" <> int (length l - 1) <> text "(" <>
+     (hcat $ punctuate (text ", ") l) <> text ")"
+
 instance AtsPretty FunType where
   atsPretty m (FunTypeIncomplete t) = text "() ->" <+> atsPretty m t
   atsPretty m (FunType t ps _) =
@@ -143,18 +157,6 @@ instance AtsPretty FunType where
       isViewPointer _                                     = False
       isViewPointer' :: ParamDecl -> Bool
       isViewPointer' = isViewPointer . paramDeclType
-      atviewToList :: AtsPrettyMap -> Type -> (Int, Int) -> [Doc] -> [Doc]
-      atviewToList m (PtrType (FunctionType t _) _ _) _ d      = (atsPretty m t) : d
-      atviewToList m (PtrType (DirectType TyVoid _ _) _ _) _ d = text "ptr" : d
-      atviewToList m (PtrType t _ _) (i,j) d                       =
-        let minor = if j == 0 then empty else text "_" <> int j
-        in atviewToList m t (i,j+1) (d ++ [text "l" <> int i <> minor])
-      atviewToList m t _ d                                     = (atsPretty m t) : d
-      atviewShow :: AtsPrettyMap -> Type -> Int -> Doc
-      atviewShow m t n =
-        let l = atviewToList m t (n, 0) []
-        in text "ptr_v_" <> int (length l - 1) <> text "(" <>
-           (hcat $ punctuate (text ", ") l) <> text ")"
       argf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       argf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [text "ptr l" <> int n])
@@ -222,15 +224,18 @@ instance AtsPretty VarName where
   atsPretty m (VarName i _) = pretty i
   atsPretty m NoName        = text "_c2ats_anonymous"
 
+getPointer :: Type -> Type
+getPointer t = PtrType t noTypeQuals []
+
 instance AtsPretty IdentDecl where
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
     text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ ty) _)) =
-    text "macdef extval" <> atsPretty m ident <+> text "= $extval(" <> atsPretty m ty <> text ", \"" <> pretty ident <> text "\")"
-  atsPretty m (ObjectDef (ObjDef (VarDecl (VarName ident _) _ ty) _ _)) =
-    text "macdef extval" <> atsPretty m ident <+> text "= $extval(" <> atsPretty m ty <> text ", \"" <> pretty ident <> text "\")"
-  atsPretty m (FunctionDef (FunDef (VarDecl (VarName ident _) _ ty) _ _)) =
-    text "fun fun" <> atsPretty m ident <> text ":" <+> atsPretty m ty <+> text "= \"mac#" <> pretty ident <> text "\""
+    text "macdef extval" <> atsPretty m ident <+> text "= $extval(["
+    <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
+    <> text ":addr] ("
+    <> atviewShow m (getPointer ty) 1
+    <+> text "| ptr l1), \"" <> text "&" <> pretty ident <> text "\")"
   atsPretty m (EnumeratorDef (Enumerator i e _ _)) =
     text "#define enum" <> atsPretty m i <+> atsPretty m e
 
