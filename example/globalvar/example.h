@@ -7,3 +7,4 @@ struct foo {
 
 extern struct foo g_foo;
 extern int g_int;
+extern char *g_str;
