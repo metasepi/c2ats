@@ -234,10 +234,13 @@ prettyIdentDeclFunc m ident ty =
 
 prettyIdentDeclObj :: AtsPrettyMap -> Ident -> Type -> Doc
 prettyIdentDeclObj m ident ty =
-  text "macdef extval" <> atsPretty m ident <+> text "= $extval(["
+  text "macdef takeout" <> atsPretty m ident <+> text "= $extval(["
   <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
   <> text ":addr] (" <> atviewShow m (getPointer ty) 1 <+> text "| ptr l1), \""
   <> text "&" <> pretty ident <> text "\")"
+  $+$ text "praxi addback" <> atsPretty m ident <+> text "{"
+  <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
+  <> text ":addr} (" <> atviewShow m (getPointer ty) 1 <+> text "| ptr l1): void"
 
 instance AtsPretty IdentDecl where
   atsPretty m (Declaration (Decl (VarDecl (VarName ident _) _ (FunctionType ty _)) _)) =
