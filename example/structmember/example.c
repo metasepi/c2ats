@@ -1,19 +1,28 @@
 #include <stdlib.h>
 #include "example.h"
 
-struct foo *get_foo (void) {
-	struct foo *ret;
-	ret = malloc(sizeof(struct foo));
-	if (NULL == ret) {
+struct bar *alloc_bar (void) {
+	struct foo *foo;
+	struct bar *bar;
+
+	foo = malloc(sizeof(struct foo));
+	if (NULL == foo) {
 		return NULL;
 	}
-	ret->i = 10;
-	ret->s = "FooBar";
-	return ret;
+	foo->i = 10;
+	foo->s = "FooBar";
+
+	bar = malloc(sizeof(struct bar));
+	if (NULL == bar) {
+		free(foo);
+		return NULL;
+	}
+	bar->f = foo;
+
+	return bar;
 }
 
-void free_foo (struct foo *p) {
-	if (NULL != p) {
-		free(p);
-	}
+void free_bar (struct bar *p) {
+	free(p->f);
+	free(p);
 }

@@ -9,7 +9,7 @@ staload "example.sats"
 extern praxi __consume_view {from:view} (pf: from):<prf> void
 
 implement main0 () = {
-  val (pffoo | foo) = fun_c2ats_get_foo ()
-  val () = fun_c2ats_free_foo (pffoo | foo)
-  prval () = __consume_view pffoo
+  val (pfbar | bar) = fun_c2ats_alloc_bar ()
+  val () = fun_c2ats_free_bar (pfbar | bar)
+  prval () = __consume_view pfbar
 }
