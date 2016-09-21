@@ -4,8 +4,7 @@ module Language.C2ATS.Process
        , injectForwardDecl
        , sortFlatGlobal
        , injectIncludes
-       , FlatGlobalDecl (..)
-       , FlatG (..)
+       , injectAccessor
        ) where
 
 import Data.Maybe
@@ -21,18 +20,8 @@ import Language.C
 import Language.C.Analysis
 import Language.C.Data.Ident
 
-data FlatGlobalDecl = FGObj  IdentDecl
-                    | FGTag  TagDef
-                    | FGType TypeDef
-                    | FGRaw  String
-
-instance CNode FlatGlobalDecl where
-  nodeInfo (FGObj  d) = nodeInfo d
-  nodeInfo (FGTag  d) = nodeInfo d
-  nodeInfo (FGType d) = nodeInfo d
-  nodeInfo (FGRaw  _) = undefNode
-
-type FlatG = (SUERef, FlatGlobalDecl)
+import Language.C2ATS.FlatGlobalDecl
+import Language.C2ATS.Pretty
 
 flatGlobal :: GlobalDecls -> [FlatG]
 flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
@@ -41,6 +30,75 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
     theObjs     = Map.assocs $ Map.map FGObj  $ Map.mapKeys NamedRef $ gObjs gmap
     theTypeDefs = Map.assocs $ Map.map FGType $ Map.mapKeys NamedRef $ gTypeDefs gmap
 
+--------------------------------------------------------------------------------
+injectAccessor :: [FlatG] -> [FlatG]
+injectAccessor fg = fg ++ [cdefs, atsdefs]
+  where
+    fgm :: AtsPrettyMap
+    fgm = Map.fromList fg
+    ptrs :: [(CompType, VarDecl)]
+    ptrs = ptrMembers fg
+    accessorName :: (CompType, VarDecl) -> String
+    accessorName (CompType s ck _ _ _, VarDecl (VarName id _) _ vt) =
+      "take_" ++ show ck ++ "_c2ats_" ++ (show $ cPretty fgm s) ++ "_"
+      ++ (show $ cPretty fgm id)
+    cdefs :: FlatG
+    cdefs =
+      (noposSueref "_struct_c2ats_accessor_cdef_", FGRaw . init . unlines $ [
+          "%{#",
+          "#ifndef _STRUCT_C2ATS_ACCESSOR_H_",
+          "#define _STRUCT_C2ATS_ACCESSOR_H_"]
+        ++ map cdefPtr ptrs
+        ++ [
+          "#endif /* _STRUCT_C2ATS_ACCESSOR_H_ */",
+          "%}"
+          ])
+    cdefPtr def@(CompType s ck _ _ _, VarDecl (VarName id _) _ vt) =
+      "static inline " ++ (show $ cPretty fgm vt) ++ " " ++ accessorName def ++ "("
+      ++ show ck ++ " " ++ (show $ cPretty fgm s) ++ " *p) { return ("
+      ++ (show $ cPretty fgm vt) ++ ") p->" ++ (show $ cPretty fgm id) ++ "; }"
+    atsdefs :: FlatG
+    atsdefs =
+      (noposSueref "_struct_c2ats_accessor_atsdef_", FGRaw . unlines $
+                                                     map atsdefPtr ptrs)
+    atsdefPtr def@(CompType s ck _ _ _, VarDecl (VarName id _) _ vt) =
+      let addrs = hPunctuate "," . tail $ atviewToList fgm vt (2, 0) [] in
+      "fun " ++ accessorName def ++ ": {l1:agz} (!ptr_v_1(" ++ show ck
+      ++ (show $ atsPretty fgm s) ++ ", l1) | ptr l1) -> [" ++ show addrs
+      ++ ":addr] (" ++ (show $ atviewShow fgm vt 2) ++ ", "
+      ++ (show $ atviewShow fgm vt 2) ++ " -<lin,prf> void | ptr l2) = \"mac#\""
+
+class PtrMembers p where
+  ptrMembers :: p -> [(CompType, VarDecl)]
+  ptrMembersCt :: CompType -> p -> [(CompType, VarDecl)]
+  ptrMembersCt ct p = ptrMembers p
+
+instance PtrMembers [FlatG] where
+  ptrMembers = concatMap ptrMembers
+
+instance PtrMembers FlatG where
+  ptrMembers (_,fg) = ptrMembers fg
+
+instance PtrMembers FlatGlobalDecl where
+  ptrMembers (FGTag (CompDef ct)) = ptrMembers ct
+  ptrMembers _ = []
+
+instance PtrMembers CompType where
+  ptrMembers ct@(CompType (NamedRef _) _ md _ _) = concatMap (ptrMembersCt ct) md
+  ptrMembers _                                   = []
+
+instance PtrMembers MemberDecl where
+  ptrMembers _ = []
+  ptrMembersCt ct (MemberDecl v@(VarDecl _ _ (PtrType (FunctionType t _) _ _)) _ _)
+    = []
+  ptrMembersCt ct (MemberDecl v@(VarDecl _ _ (PtrType (DirectType TyVoid _ _) _ _)) _ _)
+    = []
+  ptrMembersCt ct (MemberDecl v@(VarDecl (VarName _ _) _ (PtrType _ _ _)) _ _)
+    = [(ct, v)]
+  ptrMembersCt _ _
+    = []
+
+--------------------------------------------------------------------------------
 injectIncludes :: [String] -> [String] -> [FlatG] -> [FlatG]
 injectIncludes includes excludes m =
   concat . map incl . map reverse . sortElems . foldl go ([], Map.empty) $ m
@@ -165,7 +223,7 @@ injectForwardDecl = reverse . fst . foldl f ([], Set.empty)
 forwardDecls :: [String] -> [FlatG]
 forwardDecls = map f
   where
-    f i = (NamedRef $ mkIdent nopos i (Name (-1)), FGRaw $ "abst@ype " ++ i ++ " // FIXME! Forward declaration.")
+    f i = (noposSueref i, FGRaw $ "abst@ype " ++ i ++ " // FIXME! Forward declaration.")
 
 identsAppend :: IndentsMap -> IndentsMap -> IndentsMap
 identsAppend (i_a@(Just _), is_a) (i_b, is_b) = (i_a, Set.union is_a is_b)

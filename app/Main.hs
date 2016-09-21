@@ -28,8 +28,8 @@ subcmdGen args = do
   when (length args < 1) usage
   let fn:opts = args
       (gcc, copts) = getOpts opts
-  (files, globals) <- parseMkGlobal gcc copts fn
-  let global = injectForwardDecl . injectIncludes
+  (files, globals) <- parseMkGlobal gcc ("-D_XOPEN_SOURCE":copts) fn
+  let global = injectForwardDecl . injectAccessor . injectIncludes
                [ -- Includes
                ]
                [ -- Excludes

@@ -4,6 +4,10 @@ module Language.C2ATS.Pretty
        , preDefineGlobal
        , AtsPretty (..)
        , CPretty (..)
+       , AtsPrettyMap
+       , atviewToList
+       , atviewShow
+       , hPunctuate
        ) where
 
 import Data.List
@@ -16,7 +20,7 @@ import Language.C
 import Language.C.Analysis
 import Language.C.Data.Ident
 
-import Language.C2ATS.Process
+import Language.C2ATS.FlatGlobalDecl
 
 instance Pretty FlatGlobalDecl where
   pretty (FGObj  d) = pretty d
@@ -128,6 +132,9 @@ instance AtsPretty ArraySize where
 instance AtsPretty TypeDefRef where
   atsPretty m (TypeDefRef ident _ _) = atsPretty m ident
 
+hPunctuate :: String -> [Doc] -> Doc
+hPunctuate s = hcat . punctuate (text s)
+
 atviewToList :: AtsPrettyMap -> Type -> (Int, Int) -> [Doc] -> [Doc]
 atviewToList m (PtrType (FunctionType t _) _ _) _ d      = (atsPretty m t) : d
 atviewToList m (PtrType (DirectType TyVoid _ _) _ _) _ d = text "ptr" : d
@@ -139,8 +146,7 @@ atviewToList m t _ d                                     = (atsPretty m t) : d
 atviewShow :: AtsPrettyMap -> Type -> Int -> Doc
 atviewShow m t n =
   let l = atviewToList m t (n, 0) []
-  in text "ptr_v_" <> int (length l - 1) <> text "(" <>
-     (hcat $ punctuate (text ", ") l) <> text ")"
+  in text "ptr_v_" <> int (length l - 1) <> text "(" <> hPunctuate ", " l <> text ")"
 
 instance AtsPretty FunType where
   atsPretty m (FunTypeIncomplete t) = text "() ->" <+> atsPretty m t
@@ -161,26 +167,26 @@ instance AtsPretty FunType where
       argf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [text "ptr l" <> int n])
       argf m (n, ps) p = (n, ps ++ [atsPretty m p])
-      args = hcat $ punctuate (text ", ") $ snd (foldl (argf m) (1, []) ps)
+      args = hPunctuate ", " $ snd (foldl (argf m) (1, []) ps)
       addrf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       addrf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ (tail $ atviewToList m (paramDeclType pd) (n, 0) []))
       addrf m l p = l
       addrs = let a = snd (foldl (addrf m) (1, []) ps)
               in if null a then empty
-                 else text "{" <> (hcat $ punctuate (text ",") a) <> text ":addr} "
+                 else text "{" <> hPunctuate "," a <> text ":addr} "
       viewf :: AtsPrettyMap -> (Int, [Doc]) -> ParamDecl -> (Int, [Doc])
       viewf m (n, ps) pd | isViewPointer' pd =
         (n + 1, ps ++ [text "!" <> atviewShow m (paramDeclType pd) n])
       viewf m l p = l
       views = let v = snd (foldl (viewf m) (1, []) ps)
               in if null v then empty
-                 else text "" <> (hcat $ punctuate (text ", ") v) <+> text "| "
+                 else text "" <> hPunctuate ", " v <+> text "| "
       ri = fst (foldl (addrf m) (1, []) ps)
       rviews = if not (isViewPointer t) then empty
                else atviewShow m t ri <+> text "| "
       raddrs = if not (isViewPointer t) then empty
-               else text "[" <> (hcat $ punctuate (text ",") (tail $ atviewToList m t (ri,0) [])) <> text ":addr]"
+               else text "[" <> hPunctuate "," (tail $ atviewToList m t (ri,0) []) <> text ":addr]"
       ret = if not (isViewPointer t) then atsPretty m t
             else text "(" <> rviews <> text "ptr l" <> int ri <> text ")"
 
@@ -235,11 +241,11 @@ prettyIdentDeclFunc m ident ty =
 prettyIdentDeclObj :: AtsPrettyMap -> Ident -> Type -> Doc
 prettyIdentDeclObj m ident ty =
   text "macdef takeout" <> atsPretty m ident <+> text "= $extval(["
-  <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
+  <> hPunctuate"," (tail $ atviewToList m (getPointer ty) (1,0) [])
   <> text ":addr] (" <> atviewShow m (getPointer ty) 1 <+> text "| ptr l1), \""
   <> text "&" <> pretty ident <> text "\")"
   $+$ text "praxi addback" <> atsPretty m ident <+> text "{"
-  <> (hcat $ punctuate (text ",") (tail $ atviewToList m (getPointer ty) (1,0) []))
+  <> hPunctuate "," (tail $ atviewToList m (getPointer ty) (1,0) [])
   <> text ":addr} (" <> atviewShow m (getPointer ty) 1 <+> text "| ptr l1): void"
 
 instance AtsPretty IdentDecl where
@@ -329,7 +335,7 @@ instance AtsPretty CExpr where
   atsPrettyPrec m _p (CCompoundLit decl initl _) =
     parens (pretty decl) <+> (braces . hsep . punctuate comma) (map p initl) where
       p ([], initializer)           = pretty initializer
-      p (mems, initializer) = hcat (punctuate (text ".") (map pretty mems)) <+> text "=" <+> pretty initializer
+      p (mems, initializer) = hPunctuate "." (map pretty mems) <+> text "=" <+> pretty initializer
   atsPrettyPrec m _p (CStatExpr stat _) =
     text "(" <> pretty stat <> text ")"
   atsPrettyPrec m _p (CLabAddrExpr ident _) = text "&&" <> identP ident
@@ -430,7 +436,7 @@ instance CPretty CompType where
 
 instance CPretty MemberDecl where
   cPretty m (MemberDecl (VarDecl name _ (PtrType (FunctionType (FunType ty para _) _) _ _)) _ _) =
-    cPretty m ty <+> text "(*" <> pretty name <> text ")(" <> hcat (punctuate (text ", ") $ map (cPretty m) para) <> text ")" <> text "; "
+    cPretty m ty <+> text "(*" <> pretty name <> text ")(" <> (hPunctuate ", " $ map (cPretty m) para) <> text ")" <> text "; "
   cPretty m (MemberDecl (VarDecl name declattrs ty) bitfield _) =
     pretty declattrs <+> cPretty m ty <+> pretty name <> subscriptArray m ty <+>
     (maybe empty (\bf -> text ":" <+> pretty bf) bitfield) <> text "; "
@@ -498,7 +504,7 @@ instance CPretty TypeDefRef where
 
 prettyCParamFun :: AtsPrettyMap -> Ident -> Type -> [ParamDecl] -> Doc
 prettyCParamFun m n ty para =
-  cPretty m ty <+> cPretty m n <> parens (hcat $ punctuate (text ", ") $ map (cPretty m) para)
+  cPretty m ty <+> cPretty m n <> (parens . hPunctuate ", " $ map (cPretty m) para)
 prettyCParam :: AtsPrettyMap -> Ident -> Type -> Doc
 prettyCParam m n ty = cPretty m ty <+> cPretty m n <> subscriptArray m ty
 prettyCParamNoname :: AtsPrettyMap -> Type -> Doc

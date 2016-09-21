@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Language.C2ATS
+                     , Language.C2ATS.FlatGlobalDecl
                      , Language.C2ATS.Parser
                      , Language.C2ATS.Process
                      , Language.C2ATS.Pretty
