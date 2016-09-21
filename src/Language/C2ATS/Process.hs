@@ -63,7 +63,7 @@ injectAccessor fg = fg ++ [cdefs, atsdefs]
                                                      map atsdefPtr ptrs)
     atsdefPtr def@(CompType s ck _ _ _, VarDecl (VarName id _) _ vt) =
       let addrs = hPunctuate "," . tail $ atviewToList fgm vt (2, 0) [] in
-      "fun " ++ accessorName def ++ ": {l1:addr} (!ptr_v_1(" ++ show ck
+      "fun " ++ accessorName def ++ ": {l1:agz} (!ptr_v_1(" ++ show ck
       ++ (show $ atsPretty fgm s) ++ ", l1) | ptr l1) -> [" ++ show addrs
       ++ ":addr] (" ++ (show $ atviewShow fgm vt 2) ++ ", "
       ++ (show $ atviewShow fgm vt 2) ++ " -<lin,prf> void | ptr l2) = \"mac#\""
