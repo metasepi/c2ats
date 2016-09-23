@@ -5,6 +5,8 @@ module Language.C2ATS.HeaderTree
 
 import Data.Maybe
 import Data.Tree
+import Data.Map (Map)
+import qualified Data.Map as Map
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as BC
@@ -18,6 +20,8 @@ data CHeader = CHeaderQuot FilePath
              | CHeaderLess FilePath
              | CHeaderNone
              deriving (Show)
+
+type CHeaders = Tree (CHeader, FilePath)
 
 realPath :: FilePath -> IO FilePath
 realPath file = do
@@ -39,13 +43,14 @@ readFileHeader' (path:incPath) file = do
   where
     handler :: IOException -> IO (FilePath, B.ByteString)
     handler _ = readFileHeader' incPath file
+readFileHeader' [] file = throw $ PatternMatchFail file
 
-includeHeaders :: ([FilePath], [FilePath]) -> B.ByteString -> IO [Tree (CHeader, FilePath)]
+includeHeaders :: ([FilePath], [FilePath]) -> B.ByteString -> IO [CHeaders]
 includeHeaders hPath buf =
   handle handler $ do
     mapM toTree $ map toCHeader $ incs buf
   where
-    handler :: SomeException -> IO [Tree (CHeader, FilePath)]
+    handler :: SomeException -> IO [CHeaders]
     handler _ = return []
     incs :: B.ByteString -> [B.ByteString]
     incs = filter (BC.isPrefixOf "#include") . BC.lines
@@ -56,14 +61,14 @@ includeHeaders hPath buf =
       else if isJust $ BC.find (== '<') inc
            then CHeaderLess $ BC.unpack $ (BC.split '>' ((BC.split '<' inc) !! 1)) !! 0
            else CHeaderNone
-    toTree :: CHeader -> IO (Tree (CHeader, FilePath))
+    toTree :: CHeader -> IO CHeaders
     toTree CHeaderNone = return $ Node {rootLabel = (CHeaderNone, ""), subForest = []}
     toTree file        = do
       (rFile, buf) <- readFileHeader hPath file
       incs <- includeHeaders hPath buf
       return Node {rootLabel = (file, rFile), subForest = incs}
 
-headerTree :: String -> [String] -> FilePath -> IO (Tree (CHeader, FilePath))
+headerTree :: String -> [String] -> FilePath -> IO CHeaders
 headerTree gcc copts file = do
   (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
   let file' = CHeaderQuot file
