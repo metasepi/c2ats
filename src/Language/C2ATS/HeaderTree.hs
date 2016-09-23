@@ -19,24 +19,33 @@ data CHeader = CHeaderQuot FilePath
              | CHeaderNone
              deriving (Show)
 
-readFileHeader :: ([FilePath], [FilePath]) -> CHeader -> IO B.ByteString
-readFileHeader (incPath, _) (CHeaderQuot file) = readFileHeader' incPath file
-readFileHeader (_, incPath) (CHeaderLess file) = readFileHeader' incPath file
+realPath :: FilePath -> IO FilePath
+realPath file = do
+  (ExitSuccess,rfile,_) <- readProcessWithExitCode "realpath" [file] ""
+  return $ init rfile
 
-readFileHeader' :: [FilePath] -> FilePath -> IO B.ByteString
-readFileHeader' (path:incPath) file =
-  handle handler $ B.readFile $ path </> file
-  where
-    handler :: IOException -> IO B.ByteString
-    handler _ = readFileHeader' incPath file
-readFileHeader' [] file             = B.readFile file
+readFileHeader :: ([FilePath], [FilePath]) -> CHeader -> IO (FilePath, B.ByteString)
+readFileHeader (_, incPath) (CHeaderLess file)         = readFileHeader' incPath file
+readFileHeader (incPathQ, incPathL) (CHeaderQuot file) =
+  readFileHeader' ("." : incPathQ ++ incPathL) file
 
-includeHeaders :: ([FilePath], [FilePath]) -> CHeader -> IO [Tree CHeader]
-includeHeaders (headerQ, headerL) file =
+readFileHeader' :: [FilePath] -> FilePath -> IO (FilePath, B.ByteString)
+readFileHeader' (path:incPath) file = do
   handle handler $ do
-    readFileHeader (headerQ, headerL) file >>= (\buf -> mapM toTree $ map toCHeader $ incs buf)
+    let file' = path </> file
+    buf <- B.readFile file'
+    rPath <- realPath file'
+    return (rPath, buf)
   where
-    handler :: IOException -> IO [Tree CHeader]
+    handler :: IOException -> IO (FilePath, B.ByteString)
+    handler _ = readFileHeader' incPath file
+
+includeHeaders :: ([FilePath], [FilePath]) -> B.ByteString -> IO [Tree (CHeader, FilePath)]
+includeHeaders hPath buf =
+  handle handler $ do
+    mapM toTree $ map toCHeader $ incs buf
+  where
+    handler :: SomeException -> IO [Tree (CHeader, FilePath)]
     handler _ = return []
     incs :: B.ByteString -> [B.ByteString]
     incs = filter (BC.isPrefixOf "#include") . BC.lines
@@ -47,11 +56,21 @@ includeHeaders (headerQ, headerL) file =
       else if isJust $ BC.find (== '<') inc
            then CHeaderLess $ BC.unpack $ (BC.split '>' ((BC.split '<' inc) !! 1)) !! 0
            else CHeaderNone
-    toTree :: CHeader -> IO (Tree CHeader)
-    toTree CHeaderNone = return $ Node {rootLabel = CHeaderNone, subForest = []}
-    toTree file        =
-      includeHeaders (headerQ, headerL) file
-      >>= (\l -> return Node {rootLabel = file, subForest = l})
+    toTree :: CHeader -> IO (Tree (CHeader, FilePath))
+    toTree CHeaderNone = return $ Node {rootLabel = (CHeaderNone, ""), subForest = []}
+    toTree file        = do
+      (rFile, buf) <- readFileHeader hPath file
+      incs <- includeHeaders hPath buf
+      return Node {rootLabel = (file, rFile), subForest = incs}
+
+headerTree :: String -> [String] -> FilePath -> IO (Tree (CHeader, FilePath))
+headerTree gcc copts file = do
+  (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
+  let file' = CHeaderQuot file
+      hPath = searchPath spec
+  (rFile, buf) <- readFileHeader hPath file'
+  s <- includeHeaders hPath buf
+  return $ Node {rootLabel = (file', rFile), subForest = s}
 
 searchPath :: String -> ([FilePath], [FilePath])
 searchPath spec =
@@ -62,10 +81,3 @@ searchPath spec =
       headerQ = takeWhile (/= incLess) $ tail $ dropWhile (/= incQuot) $ lines spec
       headerL = takeWhile (/= endInc) $ tail $ dropWhile (/= incLess) $ lines spec
   in (map (filter (/= ' ')) $ headerQ, map (filter (/= ' ')) headerL)
-
-headerTree :: String -> [String] -> FilePath -> IO (Tree CHeader)
-headerTree gcc copts file = do
-  (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
-  let file' = CHeaderQuot file
-  s <- includeHeaders (searchPath spec) file'
-  return $ Node {rootLabel = file', subForest = s}
