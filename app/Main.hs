@@ -76,10 +76,6 @@ subcmdGen args = do
     else do
     headerTree fn >>= print
 
-subcmdGentree :: [String] -> IO ()
-subcmdGentree (file:opts) =
-  headerTree file >>= print
-
 subcmdVer :: [String] -> IO ()
 subcmdVer _ =
   putStrLn $ "c2ats version " ++ showVersion version ++ " with Copyright (c) 2016 Metasepi team"
