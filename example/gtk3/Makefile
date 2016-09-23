@@ -4,7 +4,7 @@ test_prog: main.dats example.sats
 	patscc -o $@ $< -DATS_MEMALLOC_LIBC `pkg-config --cflags --libs gtk+-3.0`
 
 example.sats: example.h
-	c2ats gen $< gcc `pkg-config --cflags gtk+-3.0` > $@
+	c2ats gen -c "gcc `pkg-config --cflags gtk+-3.0`" $< > $@
 
 test: all
 	@echo "run ./test_prog manually..."
