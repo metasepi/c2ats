@@ -10,6 +10,8 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy.Char8 as BLC
 import Control.Exception
+import System.Process
+import System.Exit
 
 data CHeader = CHeaderLess FilePath
              | CHeaderQuot FilePath
@@ -41,7 +43,19 @@ includeHeaders file =
       >>= (\l -> return Node {rootLabel = CHeaderQuot file, subForest = l})
     toTree CHeaderNone        = return $ Node {rootLabel = CHeaderNone, subForest = []}
 
-headerTree :: FilePath -> IO (Tree CHeader)
-headerTree file = do
+searchPath :: String -> ([FilePath], [FilePath])
+searchPath spec =
+  let incQuot = "#include \"...\" search starts here:"
+      incLess = "#include <...> search starts here:"
+      endInc  = "End of search list."
+      headerQ, headerL :: [FilePath]
+      headerQ = takeWhile (/= incLess) $ tail $ dropWhile (/= incQuot) $ lines spec
+      headerL = takeWhile (/= endInc) $ tail $ dropWhile (/= incLess) $ lines spec
+  in (map (filter (/= ' ')) $ headerQ, map (filter (/= ' ')) headerL)
+
+headerTree :: String -> [String] -> FilePath -> IO (Tree CHeader)
+headerTree gcc copts file = do
+  (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
+  print $ searchPath spec
   s <- includeHeaders file
   return $ Node {rootLabel = CHeaderQuot file, subForest = s}

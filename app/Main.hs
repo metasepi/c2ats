@@ -74,7 +74,7 @@ subcmdGen args = do
     global <- sortedGlobal gcc copts fn
     preDefineGlobal fn >>= print >> print (atsPrettyGlobal global)
     else do
-    headerTree fn >>= print
+    headerTree gcc copts fn >>= print
 
 subcmdVer :: [String] -> IO ()
 subcmdVer _ =
