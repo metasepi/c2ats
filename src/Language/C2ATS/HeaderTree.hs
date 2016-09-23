@@ -10,18 +10,31 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy.Char8 as BLC
 import Control.Exception
+import System.FilePath
 import System.Process
 import System.Exit
 
-data CHeader = CHeaderLess FilePath
-             | CHeaderQuot FilePath
+data CHeader = CHeaderQuot FilePath
+             | CHeaderLess FilePath
              | CHeaderNone
              deriving (Show)
 
-includeHeaders :: FilePath -> IO [Tree CHeader]
-includeHeaders file =
+readFileHeader :: ([FilePath], [FilePath]) -> CHeader -> IO B.ByteString
+readFileHeader (incPath, _) (CHeaderQuot file) = readFileHeader' incPath file
+readFileHeader (_, incPath) (CHeaderLess file) = readFileHeader' incPath file
+
+readFileHeader' :: [FilePath] -> FilePath -> IO B.ByteString
+readFileHeader' (path:incPath) file =
+  handle handler $ B.readFile $ path </> file
+  where
+    handler :: IOException -> IO B.ByteString
+    handler _ = readFileHeader' incPath file
+readFileHeader' [] file             = B.readFile file
+
+includeHeaders :: ([FilePath], [FilePath]) -> CHeader -> IO [Tree CHeader]
+includeHeaders (headerQ, headerL) file =
   handle handler $ do
-    B.readFile file >>= (\buf -> mapM toTree $ map toCHeader $ incs buf)
+    readFileHeader (headerQ, headerL) file >>= (\buf -> mapM toTree $ map toCHeader $ incs buf)
   where
     handler :: IOException -> IO [Tree CHeader]
     handler _ = return []
@@ -35,13 +48,10 @@ includeHeaders file =
            then CHeaderLess $ BC.unpack $ (BC.split '>' ((BC.split '<' inc) !! 1)) !! 0
            else CHeaderNone
     toTree :: CHeader -> IO (Tree CHeader)
-    toTree (CHeaderLess file) =
-      includeHeaders file
-      >>= (\l -> return Node {rootLabel = CHeaderLess file, subForest = l})
-    toTree (CHeaderQuot file) =
-      includeHeaders file
-      >>= (\l -> return Node {rootLabel = CHeaderQuot file, subForest = l})
-    toTree CHeaderNone        = return $ Node {rootLabel = CHeaderNone, subForest = []}
+    toTree CHeaderNone = return $ Node {rootLabel = CHeaderNone, subForest = []}
+    toTree file        =
+      includeHeaders (headerQ, headerL) file
+      >>= (\l -> return Node {rootLabel = file, subForest = l})
 
 searchPath :: String -> ([FilePath], [FilePath])
 searchPath spec =
@@ -56,6 +66,6 @@ searchPath spec =
 headerTree :: String -> [String] -> FilePath -> IO (Tree CHeader)
 headerTree gcc copts file = do
   (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
-  print $ searchPath spec
-  s <- includeHeaders file
-  return $ Node {rootLabel = CHeaderQuot file, subForest = s}
+  let file' = CHeaderQuot file
+  s <- includeHeaders (searchPath spec) file'
+  return $ Node {rootLabel = file', subForest = s}
