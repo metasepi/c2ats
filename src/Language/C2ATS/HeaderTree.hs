@@ -49,7 +49,7 @@ readFileHeader' [] file = throw $ PatternMatchFail file
 includeHeaders :: ([FilePath], [FilePath]) -> B.ByteString -> IO [CHeaders]
 includeHeaders hPath buf =
   handle handler $ do
-    mapM toTree $ map toCHeader $ incs buf
+    mapM (toTree hPath) $ map toCHeader $ incs buf
   where
     handler :: SomeException -> IO [CHeaders]
     handler _ = return []
@@ -62,21 +62,20 @@ includeHeaders hPath buf =
       else if isJust $ BC.find (== '<') inc
            then CHeaderLess $ BC.unpack $ (BC.split '>' ((BC.split '<' inc) !! 1)) !! 0
            else CHeaderNone
-    toTree :: CHeader -> IO CHeaders
-    toTree CHeaderNone = return $ Node {rootLabel = (CHeaderNone, ""), subForest = []}
-    toTree file        = do
-      (rFile, buf) <- readFileHeader hPath file
-      incs <- includeHeaders hPath buf
-      return Node {rootLabel = (file, rFile), subForest = incs}
+
+toTree :: ([FilePath], [FilePath]) -> CHeader -> IO CHeaders
+toTree _ CHeaderNone = return $ Node {rootLabel = (CHeaderNone, ""), subForest = []}
+toTree hPath file    = do
+  (rFile, buf) <- readFileHeader hPath file
+  incs <- includeHeaders hPath buf
+  return Node {rootLabel = (file, rFile), subForest = incs}
 
 headerTree :: String -> [String] -> FilePath -> IO CHeaders
 headerTree gcc copts file = do
   (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
   let file' = CHeaderQuot file
       hPath = searchPath spec
-  (rFile, buf) <- readFileHeader hPath file'
-  s <- includeHeaders hPath buf
-  return $ Node {rootLabel = (file', rFile), subForest = s}
+  toTree hPath file'
 
 searchPath :: String -> ([FilePath], [FilePath])
 searchPath spec =
