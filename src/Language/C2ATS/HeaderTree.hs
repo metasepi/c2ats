@@ -28,6 +28,7 @@ realPath file = do
   (ExitSuccess,rfile,_) <- readProcessWithExitCode "realpath" [file] ""
   return $ init rfile
 
+-- Search order: https://gcc.gnu.org/onlinedocs/cpp/Include-Syntax.html
 readFileHeader :: ([FilePath], [FilePath]) -> CHeader -> IO (FilePath, B.ByteString)
 readFileHeader (_, incPath) (CHeaderLess file)         = readFileHeader' incPath file
 readFileHeader (incPathQ, incPathL) (CHeaderQuot file) =
