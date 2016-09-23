@@ -7,7 +7,7 @@ license:             GPL-3
 license-file:        COPYING
 author:              Kiwamu Okabe
 maintainer:          kiwamu@debian.or.jp
-copyright:           2016 Kiwamu Okabe
+copyright:           2016 Metasepi team
 category:            Language
 build-type:          Simple
 extra-source-files:  README.md
