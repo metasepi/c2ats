@@ -11,6 +11,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy.Char8 as BLC
+import Control.Monad
 import Control.Exception
 import System.FilePath
 import System.Process
@@ -21,7 +22,9 @@ data CHeader = CHeaderQuot FilePath
              | CHeaderNone
              deriving (Show)
 
-type CHeaders = Tree (CHeader, FilePath)
+type CHTree = Tree (CHeader, FilePath)
+type MapCHeader = Map FilePath CHeader
+type IncPath = ([FilePath], [FilePath])
 
 realPath :: FilePath -> IO FilePath
 realPath file = do
@@ -29,7 +32,7 @@ realPath file = do
   return $ init rfile
 
 -- Search order: https://gcc.gnu.org/onlinedocs/cpp/Include-Syntax.html
-readFileHeader :: ([FilePath], [FilePath]) -> CHeader -> IO (FilePath, B.ByteString)
+readFileHeader :: IncPath -> CHeader -> IO (FilePath, B.ByteString)
 readFileHeader (_, incPath) (CHeaderLess file)         = readFileHeader' incPath file
 readFileHeader (incPathQ, incPathL) (CHeaderQuot file) =
   readFileHeader' ("." : incPathQ ++ incPathL) file
@@ -46,13 +49,14 @@ readFileHeader' (path:incPath) file = do
     handler _ = readFileHeader' incPath file
 readFileHeader' [] file = throw $ PatternMatchFail file
 
-includeHeaders :: ([FilePath], [FilePath]) -> B.ByteString -> IO [CHeaders]
-includeHeaders hPath buf =
-  handle handler $ do
-    mapM (toTree hPath) $ map toCHeader $ incs buf
+includeHeaders :: MapCHeader -> IncPath -> B.ByteString -> IO (MapCHeader, [CHTree])
+includeHeaders mapHead hPath buf =
+  handle (handler mapHead) $ do
+    (mapHead', cTree) <- foldM (go hPath) (mapHead, []) $ map toCHeader $ incs buf
+    return (mapHead', reverse cTree)
   where
-    handler :: SomeException -> IO [CHeaders]
-    handler _ = return []
+    handler :: MapCHeader -> SomeException -> IO (MapCHeader, [CHTree])
+    handler mapHead _ = return (mapHead, [])
     incs :: B.ByteString -> [B.ByteString]
     incs = filter (BC.isPrefixOf "#include") . BC.lines
     toCHeader :: B.ByteString -> CHeader
@@ -62,22 +66,32 @@ includeHeaders hPath buf =
       else if isJust $ BC.find (== '<') inc
            then CHeaderLess $ BC.unpack $ (BC.split '>' ((BC.split '<' inc) !! 1)) !! 0
            else CHeaderNone
+    go :: IncPath -> (MapCHeader, [CHTree]) -> CHeader -> IO (MapCHeader, [CHTree])
+    go hPath (mapHead, cTrees) cHead = do
+      (mapHead', cTree) <- toTree hPath mapHead cHead
+      return (mapHead', cTree:cTrees)
 
-toTree :: ([FilePath], [FilePath]) -> CHeader -> IO CHeaders
-toTree _ CHeaderNone = return $ Node {rootLabel = (CHeaderNone, ""), subForest = []}
-toTree hPath file    = do
+toTree :: IncPath -> MapCHeader -> CHeader -> IO (MapCHeader, CHTree)
+toTree _ mapHead CHeaderNone =
+  return (mapHead, Node {rootLabel = (CHeaderNone, ""), subForest = []})
+toTree hPath mapHead file    = do
   (rFile, buf) <- readFileHeader hPath file
-  incs <- includeHeaders hPath buf
-  return Node {rootLabel = (file, rFile), subForest = incs}
+  if Map.member rFile mapHead then do
+    return (mapHead, Node {rootLabel = (CHeaderNone, ""), subForest = []})
+    else do
+    print rFile -- xxx
+    let mapHead' = Map.insert rFile file mapHead
+    (mapHead'', incs) <- includeHeaders mapHead' hPath buf
+    return (mapHead'', Node {rootLabel = (file, rFile), subForest = incs})
 
-headerTree :: String -> [String] -> FilePath -> IO CHeaders
+headerTree :: String -> [String] -> FilePath -> IO (MapCHeader, CHTree)
 headerTree gcc copts file = do
   (ExitSuccess,_,spec) <- readProcessWithExitCode gcc (["-E", "-Q", "-v"] ++ file:copts) ""
   let file' = CHeaderQuot file
       hPath = searchPath spec
-  toTree hPath file'
+  toTree hPath Map.empty file'
 
-searchPath :: String -> ([FilePath], [FilePath])
+searchPath :: String -> IncPath
 searchPath spec =
   let incQuot = "#include \"...\" search starts here:"
       incLess = "#include <...> search starts here:"
