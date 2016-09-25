@@ -1,0 +1,27 @@
+// File: pango/pango.sats
+staload "{$C2ATS}/pango/pango-attributes.sats"
+staload "{$C2ATS}/pango/pango-bidi-type.sats"
+staload "{$C2ATS}/pango/pango-break.sats"
+staload "{$C2ATS}/pango/pango-context.sats"
+staload "{$C2ATS}/pango/pango-coverage.sats"
+staload "{$C2ATS}/pango/pango-engine.sats"
+staload "{$C2ATS}/pango/pango-enum-types.sats"
+staload "{$C2ATS}/pango/pango-features.sats"
+staload "{$C2ATS}/pango/pango-font.sats"
+staload "{$C2ATS}/pango/pango-fontmap.sats"
+staload "{$C2ATS}/pango/pango-fontset.sats"
+staload "{$C2ATS}/pango/pango-glyph.sats"
+staload "{$C2ATS}/pango/pango-glyph-item.sats"
+staload "{$C2ATS}/pango/pango-gravity.sats"
+staload "{$C2ATS}/pango/pango-item.sats"
+staload "{$C2ATS}/pango/pango-layout.sats"
+staload "{$C2ATS}/pango/pango-matrix.sats"
+staload "{$C2ATS}/pango/pango-renderer.sats"
+staload "{$C2ATS}/pango/pango-script.sats"
+staload "{$C2ATS}/pango/pango-tabs.sats"
+staload "{$C2ATS}/pango/pango-types.sats"
+staload "{$C2ATS}/pango/pango-utils.sats"
+staload "{$C2ATS}/pango/pango-version-macros.sats"
+%{#
+#include <pango/pango.h>
+%}

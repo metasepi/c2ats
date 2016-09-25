@@ -26,7 +26,7 @@ library
                      , containers
                      , pretty >= 1.1.3.1
                      , bytestring
-                     , filepath
+                     , filepath >= 1.4.0.0
                      , directory
                      , regex-posix
                      , process
