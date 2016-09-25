@@ -74,7 +74,9 @@ subcmdGen args = do
     global <- sortedGlobal gcc copts fn
     preDefineGlobal fn >>= print >> print (atsPrettyGlobal global)
     else do
-    headerTree gcc copts fn
+    let oDir = fromJust out
+    (mapHead, cTrees) <- headerTree gcc copts fn
+    createSATS oDir (mapHead, cTrees)
     return ()
 
 subcmdVer :: [String] -> IO ()
