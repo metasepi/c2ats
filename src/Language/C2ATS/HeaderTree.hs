@@ -71,7 +71,7 @@ includeHeaders mapHead hPath buf =
     go hPath (mapHead, cTrees) cHead = do
       (rFile, buf) <- readFileHeader hPath cHead
       if Map.member rFile mapHead then do
-        return (mapHead, cTrees)
+        return (mapHead, Node {rootLabel = (cHead, rFile), subForest = []}:cTrees)
         else do
         (mapHead', cTree) <- toTree hPath mapHead rFile cHead buf
         return (mapHead', cTree:cTrees)
