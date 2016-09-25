@@ -32,8 +32,10 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
 
 --------------------------------------------------------------------------------
 injectAccessor :: [FlatG] -> [FlatG]
+injectAccessor [] = []
 injectAccessor fg = fg ++ [cdefs, atsdefs]
   where
+    (_,fgl) = last fg
     fgm :: AtsPrettyMap
     fgm = Map.fromList fg
     ptrs :: [(CompType, VarDecl)]
@@ -44,23 +46,24 @@ injectAccessor fg = fg ++ [cdefs, atsdefs]
       ++ (show $ cPretty fgm id)
     cdefs :: FlatG
     cdefs =
-      (noposSueref "_struct_c2ats_accessor_cdef_", FGRaw . init . unlines $ [
-          "%{#",
-          "#ifndef _STRUCT_C2ATS_ACCESSOR_H_",
-          "#define _STRUCT_C2ATS_ACCESSOR_H_"]
-        ++ map cdefPtr ptrs
-        ++ [
-          "#endif /* _STRUCT_C2ATS_ACCESSOR_H_ */",
-          "%}"
-          ])
+      (noposSueref "_struct_c2ats_accessor_cdef_",
+       FGRaw ((init . unlines $ [
+                  "%{#",
+                  "#ifndef _STRUCT_C2ATS_ACCESSOR_H_",
+                  "#define _STRUCT_C2ATS_ACCESSOR_H_"]
+               ++ map cdefPtr ptrs
+               ++ [
+                 "#endif /* _STRUCT_C2ATS_ACCESSOR_H_ */",
+                 "%}"
+                ]), nodeInfo fgl))
     cdefPtr def@(CompType s ck _ _ _, VarDecl (VarName id _) _ vt) =
       "static inline " ++ (show $ cPretty fgm vt) ++ " " ++ accessorName def ++ "("
       ++ show ck ++ " " ++ (show $ cPretty fgm s) ++ " *p) { return ("
       ++ (show $ cPretty fgm vt) ++ ") p->" ++ (show $ cPretty fgm id) ++ "; }"
     atsdefs :: FlatG
     atsdefs =
-      (noposSueref "_struct_c2ats_accessor_atsdef_", FGRaw . unlines $
-                                                     map atsdefPtr ptrs)
+      (noposSueref "_struct_c2ats_accessor_atsdef_",
+       FGRaw ((unlines $ map atsdefPtr ptrs), nodeInfo fgl))
     atsdefPtr def@(CompType s ck _ _ _, VarDecl (VarName id _) _ vt) =
       let addrs = hPunctuate "," . tail $ atviewToList fgm vt (2, 0) [] in
       "fun " ++ accessorName def ++ ": {l1:agz} (!ptr_v_1(" ++ show ck
@@ -121,16 +124,16 @@ injectIncludes includes excludes m =
     incl :: [FlatG] -> [FlatG]
     incl fgs@((s,fg):_) = case getFile (s,fg) of
       Nothing ->
-        (s, FGRaw $ "// No file"):fgs
+        (s, FGRaw ("// No file", nodeInfo fg)):fgs
       (Just file) | (or $ map (=~ file) includes) || (not . or $ map ((=~) file) excludes) ->
-        (s, FGRaw $ init $ unlines [
-            "// File: " ++ file,
-            "%{#",
-            "#include \"" ++ file ++ "\"",
-            "%}"
-            ]):fgs
+        (s, FGRaw (init $ unlines [
+                      "// File: " ++ file,
+                      "%{#",
+                      "#include \"" ++ file ++ "\"",
+                      "%}"
+                      ], nodeInfo fg)):fgs
       (Just file) ->
-        (s, FGRaw $ "// File: " ++ file):fgs
+        (s, FGRaw ("// File: " ++ file, nodeInfo fg)):fgs
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG]
@@ -148,6 +151,9 @@ sortFlatGlobal = (\(a,_,_,b) -> reverse a ++ b) . foldl go ([], Set.empty, Set.e
       in (out', knowns', deps', ks')
     anons :: FlatG -> Set Int
     anons (_, g) = anonRefs g
+
+splitFlatGlobal :: [FlatG] -> Map FilePath [FlatG]
+splitFlatGlobal = undefined
 
 nodeSUERef :: SUERef -> Int
 nodeSUERef (AnonymousRef n)                        = nameId n
@@ -216,14 +222,15 @@ injectForwardDecl = reverse . fst . foldl f ([], Set.empty)
     f (fgs, is) fg@(s,g) =
       let (i, is') = idents g
           knownis  = maybe is (\a -> Set.insert a is) i
-          fds      = forwardDecls $ Set.elems $ Set.difference is' knownis
+          fds      = forwardDecls fg $ Set.elems $ Set.difference is' knownis
           is''     = Set.union is' knownis
       in (fg : fds ++ fgs, is'')
 
-forwardDecls :: [String] -> [FlatG]
-forwardDecls = map f
+forwardDecls :: FlatG -> [String] -> [FlatG]
+forwardDecls (_,fg) = map f
   where
-    f i = (noposSueref i, FGRaw $ "abst@ype " ++ i ++ " // FIXME! Forward declaration.")
+    f i = (noposSueref i,
+           FGRaw ("abst@ype " ++ i ++ " // FIXME! Forward declaration.", nodeInfo fg))
 
 identsAppend :: IndentsMap -> IndentsMap -> IndentsMap
 identsAppend (i_a@(Just _), is_a) (i_b, is_b) = (i_a, Set.union is_a is_b)

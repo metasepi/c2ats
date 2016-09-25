@@ -23,10 +23,10 @@ import Language.C.Data.Ident
 import Language.C2ATS.FlatGlobalDecl
 
 instance Pretty FlatGlobalDecl where
-  pretty (FGObj  d) = pretty d
-  pretty (FGTag  d) = pretty d
-  pretty (FGType d) = pretty d
-  pretty (FGRaw  s) = text s
+  pretty (FGObj  d)     = pretty d
+  pretty (FGTag  d)     = pretty d
+  pretty (FGType d)     = pretty d
+  pretty (FGRaw  (s,_)) = text s
 
 predef_c2ats_gnuc_va_list = "type_c2ats___gnuc_va_list"
 predef_c2ats_any          = "type_c2ats___any"
@@ -62,10 +62,10 @@ class AtsPretty p where
   atsPrettyPrec m _ = atsPretty m
 
 instance AtsPretty FlatGlobalDecl where
-  atsPretty m (FGObj  d) = atsPretty m d
-  atsPretty m (FGTag  d) = atsPretty m d
-  atsPretty m (FGType d) = atsPretty m d
-  atsPretty m (FGRaw s)  = text s
+  atsPretty m (FGObj  d)    = atsPretty m d
+  atsPretty m (FGTag  d)    = atsPretty m d
+  atsPretty m (FGType d)    = atsPretty m d
+  atsPretty m (FGRaw (s,_)) = text s
 
 instance AtsPretty TypeDef where
   atsPretty m (TypeDef ident ty _ _) =
