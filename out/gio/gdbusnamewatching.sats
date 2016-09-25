@@ -1,5 +1,0 @@
-// File: gio/gdbusnamewatching.sats
-staload "{$C2ATS}/gio/giotypes.sats"
-%{#
-#include <gio/gdbusnamewatching.h>
-%}
