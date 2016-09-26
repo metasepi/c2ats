@@ -3,4 +3,5 @@
 a.out
 dist/
 example.sats
+out/
 test_prog
