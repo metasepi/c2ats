@@ -113,14 +113,14 @@ createSATS oDir (mapHead, cTrees) = traverseTree go cTrees
                              ])
     go' :: FilePath -> FilePath -> [CHTree] -> (String -> String) -> IO ()
     go' file rPath sub doInc = do
-      let file' = oDir </> tail rPath
-      isNotExist <- fmap not $ doesFileExist $ file' -<.> ".sats"
+      let rPath' = oDir </> tail rPath
+      isNotExist <- fmap not $ doesFileExist $ rPath' -<.> ".sats"
       when isNotExist $ do
-        createDirectoryIfMissing True $ takeDirectory $ file'
-        writeFile (file' -<.> ".sats") $ "// File: " ++ rPath -<.> ".sats\n"
+        createDirectoryIfMissing True $ takeDirectory $ rPath'
+        writeFile (rPath' -<.> ".sats") $ "// File: " ++ rPath -<.> ".sats\n"
         when (not . null $ sub) $
-          appendFile (file' -<.> ".sats") $ foldr staload "" sub
-        appendFile (file' -<.> ".sats") $ doInc file
+          appendFile (rPath' -<.> ".sats") $ foldr staload "" sub
+        appendFile (rPath' -<.> ".sats") $ doInc file
     staload :: CHTree -> String -> String
     staload (Node {rootLabel = (CHeaderQuot file, _), subForest = _}) =
       (++) $ "staload \"" ++ "{$C2ATS}" </> file -<.> ".sats" ++ "\"\n"
