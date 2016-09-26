@@ -2,6 +2,7 @@
 module Language.C2ATS.Process
        ( flatGlobal
        , injectForwardDecl
+       , splitFlatGlobal
        , sortFlatGlobal
        , injectIncludes
        , injectAccessor
@@ -136,6 +137,22 @@ injectIncludes includes excludes m =
         (s, FGRaw ("// File: " ++ file, nodeInfo fg)):fgs
 
 --------------------------------------------------------------------------------
+splitFlatGlobal :: [FlatG] -> Map (Maybe FilePath) [FlatG]
+splitFlatGlobal = fmap reverse . splitFlatGlobal' Map.empty
+
+splitFlatGlobal' :: Map (Maybe FilePath) [FlatG] -> [FlatG]
+                    -> Map (Maybe FilePath) [FlatG]
+splitFlatGlobal' mFile []                   = mFile
+splitFlatGlobal' mFile (fg@(_,fglobal):fgs) = splitFlatGlobal' mFile' fgs
+  where
+    file :: Maybe FilePath
+    file = fileOfNode fglobal
+    mFile' :: Map (Maybe FilePath) [FlatG]
+    mFile' = if Map.member (fileOfNode fglobal) mFile
+             then Map.adjust (fg:) file mFile
+             else Map.insert file [fg] mFile
+
+--------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG]
 sortFlatGlobal = (\(a,_,_,b) -> reverse a ++ b) . foldl go ([], Set.empty, Set.empty, []) . sortBy order
   where
@@ -151,9 +168,6 @@ sortFlatGlobal = (\(a,_,_,b) -> reverse a ++ b) . foldl go ([], Set.empty, Set.e
       in (out', knowns', deps', ks')
     anons :: FlatG -> Set Int
     anons (_, g) = anonRefs g
-
-splitFlatGlobal :: [FlatG] -> Map FilePath [FlatG]
-splitFlatGlobal = undefined
 
 nodeSUERef :: SUERef -> Int
 nodeSUERef (AnonymousRef n)                        = nameId n
