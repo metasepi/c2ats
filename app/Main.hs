@@ -77,7 +77,7 @@ subcmdGen args = do
     let oDir    = fromJust out
         mGlobal = splitFlatGlobal global
     (mapHead, cTrees) <- headerTree gcc copts fn
-    createSATS oDir (mapHead, cTrees)
+    createSATS oDir mapHead cTrees
 
 subcmdVer :: [String] -> IO ()
 subcmdVer _ =

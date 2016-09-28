@@ -95,8 +95,8 @@ traverseTree f t@(Node {rootLabel = r, subForest = []}) = f t
 traverseTree f t@(Node {rootLabel = r, subForest = s})  =
   f t >> mapM_ (traverseTree f) s
 
-createSATS :: FilePath -> (MapCHeader, CHTree) -> IO ()
-createSATS oDir (mapHead, cTrees) = traverseTree go cTrees
+createSATS :: FilePath -> MapCHeader -> CHTree -> IO ()
+createSATS oDir mapHead cTrees = traverseTree go cTrees
   where
     go :: CHTree -> IO ()
     go (Node {rootLabel = (CHeaderQuot file, rPath), subForest = sub}) =
