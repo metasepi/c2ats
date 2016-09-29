@@ -37,31 +37,28 @@ realPath file = do
   return $ init rfile
 
 -- Search order: https://gcc.gnu.org/onlinedocs/cpp/Include-Syntax.html
-readFileHeader :: IncPath -> CHeader -> IO (FilePath, B.ByteString)
+readFileHeader :: IncPath -> CHeader -> IO (Maybe FilePath, B.ByteString)
 readFileHeader (_, incPath) (CHeaderLess file)         = readFileHeader' incPath file
 readFileHeader (incPathQ, incPathL) (CHeaderQuot file) =
   readFileHeader' ("." : incPathQ ++ incPathL) file
 
-readFileHeader' :: [FilePath] -> FilePath -> IO (FilePath, B.ByteString)
+readFileHeader' :: [FilePath] -> FilePath -> IO (Maybe FilePath, B.ByteString)
 readFileHeader' (path:incPath) file = do
   handle handler $ do
     let file' = path </> file
     buf <- B.readFile file'
     rPath <- realPath file'
-    return (rPath, buf)
+    return (Just rPath, buf)
   where
-    handler :: IOException -> IO (FilePath, B.ByteString)
+    handler :: IOException -> IO (Maybe FilePath, B.ByteString)
     handler _ = readFileHeader' incPath file
-readFileHeader' [] file = throw $ PatternMatchFail file
+readFileHeader' [] file = return (Nothing, "")
 
 includeHeaders :: MapCHeader -> IncPath -> B.ByteString -> IO (MapCHeader, [CHTree])
-includeHeaders mapHead hPath buf =
-  handle (handler mapHead) $ do
-    (mapHead', cTree) <- foldM (go hPath) (mapHead, []) $ map toCHeader $ incs buf
-    return (mapHead', reverse cTree)
+includeHeaders mapHead hPath buffer = do
+  (mapHead', cTree) <- foldM (go hPath) (mapHead, []) $ map toCHeader $ incs buffer
+  return (mapHead', reverse cTree)
   where
-    handler :: MapCHeader -> SomeException -> IO (MapCHeader, [CHTree])
-    handler mapHead _ = return (mapHead, [])
     incs :: B.ByteString -> [B.ByteString]
     incs = filter (BC.isPrefixOf "#include") . map (B.filter (/= BI.c2w ' ')) . BC.lines
     toCHeader :: B.ByteString -> CHeader
@@ -74,10 +71,12 @@ includeHeaders mapHead hPath buf =
     go :: IncPath -> (MapCHeader, [CHTree]) -> CHeader -> IO (MapCHeader, [CHTree])
     go hPath (mapHead, cTrees) cHead = do
       (rFile, buf) <- readFileHeader hPath cHead
-      if Map.member rFile mapHead then do
-        return (mapHead, Node {rootLabel = (cHead, rFile), subForest = []}:cTrees)
+      if isNothing rFile then return (mapHead, cTrees)
+        else if Map.member (fromJust rFile) mapHead then
+        return (mapHead, Node {rootLabel = (cHead, fromJust rFile),
+                               subForest = []}:cTrees)
         else do
-        (mapHead', cTree) <- toTree hPath mapHead rFile cHead buf
+        (mapHead', cTree) <- toTree hPath mapHead (fromJust rFile) cHead buf
         return (mapHead', cTree:cTrees)
 
 toTree :: IncPath -> MapCHeader -> FilePath -> CHeader -> B.ByteString -> IO (MapCHeader, CHTree)
@@ -92,7 +91,9 @@ headerTree gcc copts file = do
   let file' = CHeaderQuot file
       hPath = searchPath spec
   (rFile, buf) <- readFileHeader hPath file'
-  toTree hPath Map.empty rFile file' buf
+  if isNothing rFile
+    then return (Map.empty, Node {rootLabel = (CHeaderQuot "", ""), subForest = []})
+    else toTree hPath Map.empty (fromJust rFile) file' buf
 
 foldMTree :: Monad m => (b -> Tree a -> m b) -> b -> Tree a -> m b
 foldMTree f b t@(Node {rootLabel = r, subForest = []}) = f b t
