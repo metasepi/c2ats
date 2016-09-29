@@ -29,6 +29,7 @@ data CHeader = CHeaderQuot FilePath
 
 type CHTree = Tree (CHeader, FilePath)
 type MapCHeader = Map FilePath CHeader
+type MapFlatG = Map (Maybe FilePath) [FlatG]
 type IncPath = ([FilePath], [FilePath])
 
 realPath :: FilePath -> IO FilePath
@@ -104,11 +105,11 @@ foldMTree' :: Monad m => (b -> Tree a -> m b) -> b -> [Tree a] -> m b
 foldMTree' f b []     = return b
 foldMTree' f b (t:ts) = foldMTree f b t >>= (\a -> foldMTree' f a ts)
 
-createSATS :: FilePath -> MapCHeader -> CHTree -> Map (Maybe FilePath) [FlatG] -> IO ()
+createSATS :: FilePath -> MapCHeader -> CHTree -> MapFlatG -> IO ()
 createSATS oDir mapHead cTrees sGlobal =
   prelude sGlobal >>= (\sg -> foldMTree go sg cTrees) >>= (\sg -> print $ Map.keys sg)
   where
-    prelude :: Map (Maybe FilePath) [FlatG] -> IO (Map (Maybe FilePath) [FlatG])
+    prelude :: MapFlatG -> IO MapFlatG
     prelude sg = do
       let pre  = fromJust $ Map.lookup Nothing sg
           sats = oDir </> "c2ats_prelude.sats"
@@ -117,7 +118,7 @@ createSATS oDir mapHead cTrees sGlobal =
         createDirectoryIfMissing True $ takeDirectory sats
         writeFile sats $ show . atsPrettyGlobal $ pre
       return $ Map.delete Nothing sg
-    go :: Map (Maybe FilePath) [FlatG] -> CHTree -> IO (Map (Maybe FilePath) [FlatG])
+    go :: MapFlatG -> CHTree -> IO MapFlatG
     go sg (Node {rootLabel = (CHeaderQuot file, rPath), subForest = sub}) =
       go' sg rPath sub (unlines [
                            "%{#",
@@ -130,8 +131,7 @@ createSATS oDir mapHead cTrees sGlobal =
                            "#include <" ++ file ++ ">",
                            "%}"
                            ])
-    go' :: Map (Maybe FilePath) [FlatG] -> FilePath -> [CHTree] -> String
-           -> IO (Map (Maybe FilePath) [FlatG])
+    go' :: MapFlatG -> FilePath -> [CHTree] -> String -> IO MapFlatG
     go' sg rPath sub inc = do
       let sats   = oDir </> tail rPath -<.> ".sats"
       isNotExist <- fmap not $ doesFileExist $ sats
