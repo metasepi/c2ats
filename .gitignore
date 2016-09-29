@@ -1,3 +1,4 @@
+*.gch
 *_dats.c
 .stack-work/
 a.out
