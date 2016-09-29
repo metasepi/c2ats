@@ -106,8 +106,17 @@ foldMTree' f b (t:ts) = foldMTree f b t >>= (\a -> foldMTree' f a ts)
 
 createSATS :: FilePath -> MapCHeader -> CHTree -> Map (Maybe FilePath) [FlatG] -> IO ()
 createSATS oDir mapHead cTrees sGlobal =
-  foldMTree go sGlobal cTrees >>= (\a -> print $ Map.keys a)
+  prelude sGlobal >>= (\sg -> foldMTree go sg cTrees) >>= (\sg -> print $ Map.keys sg)
   where
+    prelude :: Map (Maybe FilePath) [FlatG] -> IO (Map (Maybe FilePath) [FlatG])
+    prelude sg = do
+      let pre  = fromJust $ Map.lookup Nothing sg
+          sats = oDir </> "c2ats_prelude.sats"
+      isNotExist <- fmap not $ doesFileExist $ sats
+      when isNotExist $ do
+        createDirectoryIfMissing True $ takeDirectory sats
+        writeFile sats $ show . atsPrettyGlobal $ pre
+      return $ Map.delete Nothing sg
     go :: Map (Maybe FilePath) [FlatG] -> CHTree -> IO (Map (Maybe FilePath) [FlatG])
     go sg (Node {rootLabel = (CHeaderQuot file, rPath), subForest = sub}) =
       go' sg rPath sub (unlines [
