@@ -19,6 +19,8 @@ import System.Directory
 import System.Process
 import System.Exit
 
+import Language.C2ATS.FlatGlobalDecl
+
 data CHeader = CHeaderQuot FilePath
              | CHeaderLess FilePath
              deriving (Show)
@@ -95,8 +97,8 @@ traverseTree f t@(Node {rootLabel = r, subForest = []}) = f t
 traverseTree f t@(Node {rootLabel = r, subForest = s})  =
   f t >> mapM_ (traverseTree f) s
 
-createSATS :: FilePath -> MapCHeader -> CHTree -> IO ()
-createSATS oDir mapHead cTrees = traverseTree go cTrees
+createSATS :: FilePath -> MapCHeader -> CHTree -> Map (Maybe FilePath) [FlatG] -> IO ()
+createSATS oDir mapHead cTrees sGlobal = traverseTree go cTrees
   where
     go :: CHTree -> IO ()
     go (Node {rootLabel = (CHeaderQuot file, rPath), subForest = sub}) =
@@ -119,13 +121,11 @@ createSATS oDir mapHead cTrees = traverseTree go cTrees
         createDirectoryIfMissing True $ takeDirectory $ rPath'
         writeFile (rPath' -<.> ".sats") $ "// File: " ++ rPath -<.> ".sats\n"
         when (not . null $ sub) $
-          appendFile (rPath' -<.> ".sats") $ foldr staload "" sub
+          appendFile (rPath' -<.> ".sats") $ foldr stainc "" sub
         appendFile (rPath' -<.> ".sats") $ doInc file
-    staload :: CHTree -> String -> String
-    staload (Node {rootLabel = (CHeaderQuot file, _), subForest = _}) =
-      (++) $ "staload \"" ++ "{$C2ATS}" </> file -<.> ".sats" ++ "\"\n"
-    staload (Node {rootLabel = (CHeaderLess file, _), subForest = _}) =
-      (++) $ "staload \"" ++ "{$C2ATS}" </> file -<.> ".sats" ++ "\"\n"
+    stainc :: CHTree -> String -> String
+    stainc (Node {rootLabel = (_, rPath), subForest = _}) =
+      (++) $ "#include \"" ++ "{$C2ATS}" </> tail rPath -<.> ".sats" ++ "\"\n"
 
 searchPath :: String -> IncPath
 searchPath spec =
