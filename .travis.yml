@@ -1,15 +1,29 @@
-sudo: required
-dist: trusty
+# Use new container infrastructure to enable caching
+sudo: false
+
+# Choose a lightweight base image; we provide our own build tools.
+language: c
+
+# Caching so the next build will be fast too.
+cache:
+  directories:
+  - $HOME/.stack
+
+matrix:
+  include:
+  - env: GHCVER=8.0.1 STACK_YAML=stack.yaml
+    addons: {apt: {packages: [ghc-8.0.1,libgmp-dev,libgtk-3-dev], sources: [hvr-ghc]}}
 
 before_install:
   - date
   - cat /proc/cpuinfo
+  - unset CC
   - cd ${HOME}
-  # Install packges
+  # Install stack
   - sudo apt-get -qq -y install libgmp-dev haskell-platform cabal-install libgtk-3-dev
-  - gcc --version
-  - cabal update
-  - export PATH=${HOME}/.cabal/bin:${PATH}
+  - mkdir -p ${HOME}/.local/bin
+  - curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ${HOME}/.local/bin '*/stack'
+  - export PATH=/opt/ghc/${GHCVER}/bin:/opt/cabal/${CABALVER}/bin:${HOME}/.local/bin:${HOME}/.cabal/bin:${PATH}
   # Clone
   - git clone https://github.com/githwxi/ATS-Postiats.git
   - git clone https://github.com/githwxi/ATS-Postiats-contrib.git
@@ -23,10 +37,13 @@ before_install:
   - export PATSHOMERELOC=${HOME}/ATS-Postiats-contrib
   - export PATH=${PATH}:${PATSHOME}/bin
   - cd ${PATSHOME} && make -f codegen/Makefile_atslib && make -f Makefile_devl src_depend && make -f Makefile_devl all
+  - gcc --version
+  - ghc --version
+  - patsopt --version
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
-  - make cabal_install
+  - stack --no-terminal --skip-ghc-check install
   - make all
   - make test
 
