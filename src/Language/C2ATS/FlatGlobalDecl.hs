@@ -1,8 +1,11 @@
 module Language.C2ATS.FlatGlobalDecl
        ( FlatGlobalDecl (..)
        , FlatG (..)
+       , MapFlatG (..)
        , noposSueref
        ) where
+
+import Data.Map (Map)
 
 import Language.C
 import Language.C.Analysis
@@ -19,6 +22,7 @@ instance CNode FlatGlobalDecl where
   nodeInfo (FGRaw  (_, n)) = n
 
 type FlatG = (SUERef, FlatGlobalDecl)
+type MapFlatG = Map (Maybe FilePath) [FlatG]
 
 noposSueref :: String -> SUERef
 noposSueref s = NamedRef $ mkIdent nopos s $ Name (-1)

@@ -112,12 +112,11 @@ injectIncludes includes excludes m =
     f xs      = Just . filter (\c -> c /= '"' && c /= ':' && c /= '(') . head . words $ xs
     getFile :: FlatG -> Maybe FilePath
     getFile = f . show . posOfNode . nodeInfo . snd
-    sortElems :: ([Maybe FilePath], Map (Maybe FilePath) [FlatG]) -> [[FlatG]]
+    sortElems :: ([Maybe FilePath], MapFlatG) -> [[FlatG]]
     sortElems (file:files,mp) =
       sortElems (files, Map.delete file mp) ++ [fromJust $ Map.lookup file mp]
     sortElems ([], _)         = []
-    go :: ([Maybe FilePath], Map (Maybe FilePath) [FlatG]) -> FlatG
-          -> ([Maybe FilePath], Map (Maybe FilePath) [FlatG])
+    go :: ([Maybe FilePath], MapFlatG) -> FlatG -> ([Maybe FilePath], MapFlatG)
     go (files,mp) fg =
       let file = getFile fg
           files' = if file `elem` files then files else file:files
@@ -137,17 +136,16 @@ injectIncludes includes excludes m =
         (s, FGRaw ("// File: " ++ file, nodeInfo fg)):fgs
 
 --------------------------------------------------------------------------------
-splitFlatGlobal :: [FlatG] -> Map (Maybe FilePath) [FlatG]
+splitFlatGlobal :: [FlatG] -> MapFlatG
 splitFlatGlobal = fmap reverse . splitFlatGlobal' Map.empty
 
-splitFlatGlobal' :: Map (Maybe FilePath) [FlatG] -> [FlatG]
-                    -> Map (Maybe FilePath) [FlatG]
+splitFlatGlobal' :: MapFlatG -> [FlatG] -> MapFlatG
 splitFlatGlobal' mFile []                   = mFile
 splitFlatGlobal' mFile (fg@(_,fglobal):fgs) = splitFlatGlobal' mFile' fgs
   where
     file :: Maybe FilePath
     file = fileOfNode fglobal
-    mFile' :: Map (Maybe FilePath) [FlatG]
+    mFile' :: MapFlatG
     mFile' = if Map.member (fileOfNode fglobal) mFile
              then Map.adjust (fg:) file mFile
              else Map.insert file [fg] mFile

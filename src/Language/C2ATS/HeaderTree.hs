@@ -29,7 +29,6 @@ data CHeader = CHeaderQuot FilePath
 
 type CHTree = Tree (CHeader, FilePath)
 type MapCHeader = Map FilePath CHeader
-type MapFlatG = Map (Maybe FilePath) [FlatG]
 type IncPath = ([FilePath], [FilePath])
 
 realPath :: FilePath -> IO FilePath
