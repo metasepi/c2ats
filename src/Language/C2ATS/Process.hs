@@ -143,7 +143,7 @@ splitFlatGlobal fg = fmap (fmap reverse) $ splitFlatGlobal' Map.empty fg
 splitFlatGlobal' :: MapFlatG -> [FlatG] -> IO MapFlatG
 splitFlatGlobal' mFile []                   = return mFile
 splitFlatGlobal' mFile (fg@(_,fglobal):fgs) = do
-  rPath <- (mapM realPath $ (fileOfNode fglobal :: Maybe FilePath))
+  rPath <- (mapM realPath :: Maybe FilePath -> IO (Maybe FilePath)) $ (fileOfNode fglobal)
   splitFlatGlobal' (mFile' rPath) fgs
   where
     mFile' :: Maybe FilePath -> MapFlatG
