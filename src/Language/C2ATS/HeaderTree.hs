@@ -31,11 +31,6 @@ type CHTree = Tree (CHeader, FilePath)
 type MapCHeader = Map FilePath CHeader
 type IncPath = ([FilePath], [FilePath])
 
-realPath :: FilePath -> IO FilePath
-realPath file = do
-  (ExitSuccess,rfile,_) <- readProcessWithExitCode "realpath" [file] ""
-  return $ init rfile
-
 -- Search order: https://gcc.gnu.org/onlinedocs/cpp/Include-Syntax.html
 readFileHeader :: IncPath -> CHeader -> IO (Maybe FilePath, B.ByteString)
 readFileHeader (_, incPath) (CHeaderLess file)         = readFileHeader' incPath file
@@ -106,7 +101,10 @@ foldMTree' f b (t:ts) = foldMTree f b t >>= (\a -> foldMTree' f a ts)
 
 createSATS :: FilePath -> MapCHeader -> CHTree -> MapFlatG -> IO ()
 createSATS oDir mapHead cTrees sGlobal =
-  prelude sGlobal >>= (\sg -> foldMTree go sg cTrees) >>= (\sg -> print $ Map.keys sg)
+  prelude sGlobal
+  >>= (\sg -> foldMTree go sg cTrees)
+  >>= (\sg -> if Map.null sg then return ()
+              else error ("*** HeaderTree remains " ++ (show $ Map.keys sg)))
   where
     prelude :: MapFlatG -> IO MapFlatG
     prelude sg = do

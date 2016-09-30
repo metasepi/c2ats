@@ -15,6 +15,7 @@ import qualified Data.Set as Set
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Text.Regex.Posix
+import Control.Monad
 import Debug.Trace {- for warnings -}
 
 import Language.C
@@ -136,19 +137,19 @@ injectIncludes includes excludes m =
         (s, FGRaw ("// File: " ++ file, nodeInfo fg)):fgs
 
 --------------------------------------------------------------------------------
-splitFlatGlobal :: [FlatG] -> MapFlatG
-splitFlatGlobal = fmap reverse . splitFlatGlobal' Map.empty
+splitFlatGlobal :: [FlatG] -> IO MapFlatG
+splitFlatGlobal fg = fmap (fmap reverse) $ splitFlatGlobal' Map.empty fg
 
-splitFlatGlobal' :: MapFlatG -> [FlatG] -> MapFlatG
-splitFlatGlobal' mFile []                   = mFile
-splitFlatGlobal' mFile (fg@(_,fglobal):fgs) = splitFlatGlobal' mFile' fgs
+splitFlatGlobal' :: MapFlatG -> [FlatG] -> IO MapFlatG
+splitFlatGlobal' mFile []                   = return mFile
+splitFlatGlobal' mFile (fg@(_,fglobal):fgs) = do
+  rPath <- mapM realPath $ fileOfNode fglobal
+  splitFlatGlobal' (mFile' rPath) fgs
   where
-    file :: Maybe FilePath
-    file = fileOfNode fglobal
-    mFile' :: MapFlatG
-    mFile' = if Map.member (fileOfNode fglobal) mFile
-             then Map.adjust (fg:) file mFile
-             else Map.insert file [fg] mFile
+    mFile' :: Maybe FilePath -> MapFlatG
+    mFile' f = if Map.member f mFile
+             then Map.adjust (fg:) f mFile
+             else Map.insert f [fg] mFile
 
 --------------------------------------------------------------------------------
 sortFlatGlobal :: [FlatG] -> [FlatG]

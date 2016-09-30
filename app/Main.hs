@@ -75,7 +75,7 @@ subcmdGen args = do
     preDefineGlobal fn >>= print >> print (atsPrettyGlobal global)
     else do
     let oDir    = fromJust out
-        sGlobal = splitFlatGlobal global
+    sGlobal <- splitFlatGlobal global
     (mapHead, cTrees) <- headerTree gcc copts fn
     createSATS oDir mapHead cTrees sGlobal
 
