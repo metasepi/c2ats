@@ -134,17 +134,17 @@ createSATS oDir mapHead cTrees sGlobal =
       isNotExist <- fmap not $ doesFileExist $ sats
       when isNotExist $ do
         createDirectoryIfMissing True $ takeDirectory sats
-        writeFile sats $ "// File: " ++ rPath -<.> ".sats\n"
+        BL.writeFile sats $ BLC.pack $ "// File: " ++ rPath -<.> ".sats\n"
         when (not . null $ sub) $
-          appendFile sats $ foldr stainc "" sub
-        appendFile sats inc
+          BL.appendFile sats $ foldr stainc "" sub
+        BL.appendFile sats $ BLC.pack inc
         let insg = Map.lookup (Just rPath) sg
         when (isJust insg) $
-          appendFile sats $ show . atsPrettyGlobal $ fromJust insg
+          BL.appendFile sats $ BLC.pack $ show . atsPrettyGlobal $ fromJust insg
       return $ Map.delete (Just rPath) sg
-    stainc :: CHTree -> String -> String
+    stainc :: CHTree -> BL.ByteString -> BL.ByteString
     stainc (Node {rootLabel = (_, rPath), subForest = _}) =
-      (++) $ "#include \"" ++ "{$C2ATS}" </> tail rPath -<.> ".sats" ++ "\"\n"
+      BLC.append $ BLC.pack $ "#include \"{$C2ATS}" </> tail rPath -<.> ".sats" ++ "\"\n"
 
 searchPath :: String -> IncPath
 searchPath spec =
