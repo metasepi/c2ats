@@ -69,12 +69,12 @@ subcmdGen args = do
   let fn = head n
       (gcc, copts) = getGccOpts o
       out = getOutOpt o
-  global <- sortedGlobal gcc copts fn
+  global <- sortedGlobal gcc copts fn >>= preDefineGlobal fn
   if isNothing out
     then do
-    preDefineGlobal fn >>= print >> print (atsPrettyGlobal global)
+    print $ atsPrettyGlobal global
     else do
-    let oDir    = fromJust out
+    let oDir = fromJust out
     sGlobal <- splitFlatGlobal global
     (mapHead, cTrees) <- headerTree gcc copts fn
     createSATS oDir mapHead cTrees sGlobal

@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 module Language.C2ATS.Pretty
        ( atsPrettyGlobal
-       , preDefineGlobal
+       , preDefine
        , AtsPretty (..)
        , CPretty (..)
        , AtsPrettyMap
@@ -28,23 +28,21 @@ instance Pretty FlatGlobalDecl where
   pretty (FGType d)     = pretty d
   pretty (FGRaw  (s,_)) = text s
 
-predef_c2ats_gnuc_va_list = "type_c2ats___gnuc_va_list"
-predef_c2ats_any          = "type_c2ats___any"
+predef_c2ats_gnuc_va_list = "type_c2ats___gnuc_va_list" -- can't use in ATS
+predef_c2ats_any          = "type_c2ats___any"          -- can't use in ATS
 
-preDefineGlobal :: FilePath -> IO Doc
-preDefineGlobal f = do
-  s <- readFile f
-  return $ text ("// File: " ++ f) $+$ text "%{#" $+$ text s $+$ text "%}" $+$
-    text "abst@ype" <+> text predef_c2ats_gnuc_va_list $+$ -- can't use in ATS
-    text "abst@ype" <+> text predef_c2ats_any $+$          -- can't use in ATS
-    text (init $ unlines [
-             "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
-             "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
-             "  | ptr_v_2_cons(a, l0, l1) of (ptr l1 @ l0, ptr_v_1 (a, l1))",
-             "dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =",
-             "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
-             -- Need dataview ptr_v_4, and more?
-             ])
+preDefine :: String
+preDefine =
+  init $ unlines [
+    "abst@ype " ++ predef_c2ats_gnuc_va_list,
+    "abst@ype " ++ predef_c2ats_any,
+    "viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l",
+    "dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =",
+    "  | ptr_v_2_cons(a, l0, l1) of (ptr l1 @ l0, ptr_v_1 (a, l1))",
+    "dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =",
+    "  | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))"
+    -- Need dataview ptr_v_4, and more?
+    ]
 
 --------------------------------------------------------------------------------
 type AtsPrettyMap = Map SUERef FlatGlobalDecl

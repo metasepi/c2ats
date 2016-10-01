@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 module Language.C2ATS.Process
        ( flatGlobal
+       , preDefineGlobal
        , injectForwardDecl
        , splitFlatGlobal
        , sortFlatGlobal
@@ -31,6 +32,13 @@ flatGlobal gmap = theTags ++ theObjs ++ theTypeDefs
     theTags     = Map.assocs $ Map.map FGTag  $ gTags gmap
     theObjs     = Map.assocs $ Map.map FGObj  $ Map.mapKeys NamedRef $ gObjs gmap
     theTypeDefs = Map.assocs $ Map.map FGType $ Map.mapKeys NamedRef $ gTypeDefs gmap
+
+--------------------------------------------------------------------------------
+preDefineGlobal :: String -> [FlatG] -> IO [FlatG]
+preDefineGlobal f fgs@((_,fg):_) = do
+  s <- readFile f
+  let pre = "// File: " ++ f ++ "\n%{#\n" ++ s ++ "\n%}\n" ++ preDefine
+  return $ (noposSueref "_predef_c2ats_", FGRaw (pre, nodeInfo fg)):fgs
 
 --------------------------------------------------------------------------------
 injectAccessor :: [FlatG] -> [FlatG]
