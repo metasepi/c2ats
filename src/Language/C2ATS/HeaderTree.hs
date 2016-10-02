@@ -144,7 +144,7 @@ createSATS oDir mapHead cTrees sGlobal =
       return $ Map.delete (Just rPath) sg
     stainc :: CHTree -> BL.ByteString -> BL.ByteString
     stainc (Node {rootLabel = (_, rPath), subForest = _}) =
-      BLC.append $ BLC.pack $ "#include \"{$C2ATS}" </> tail rPath -<.> ".sats" ++ "\"\n"
+      BLC.append $ BLC.pack $ "#include \"" ++ oDir </> tail rPath -<.> ".sats" ++ "\"\n"
 
 searchPath :: String -> IncPath
 searchPath spec =

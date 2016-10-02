@@ -3,7 +3,8 @@
 
 staload UN = "prelude/SATS/unsafe.sats"
 
-staload "out/c2ats_prelude.sats"
+#include "config.hats"
+staload "{$EXAMPLE}/example.sats"
 
 fun my_printf (s: string): void = {
   val p = string2ptr s
