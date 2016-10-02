@@ -68,11 +68,10 @@ includeHeaders mapHead hPath buffer = do
       (rFile, buf) <- readFileHeader hPath cHead
       if isNothing rFile then return (mapHead, cTrees)
         else if Map.member (fromJust rFile) mapHead then
-        return (mapHead, Node {rootLabel = (cHead, fromJust rFile),
-                               subForest = []}:cTrees)
+               return (mapHead, cTrees) -- Need to connect cHead only?
         else do
-        (mapHead', cTree) <- toTree hPath mapHead (fromJust rFile) cHead buf
-        return (mapHead', cTree:cTrees)
+               (mapHead', cTree) <- toTree hPath mapHead (fromJust rFile) cHead buf
+               return (mapHead', cTree:cTrees)
 
 toTree :: IncPath -> MapCHeader -> FilePath -> CHeader -> B.ByteString -> IO (MapCHeader, CHTree)
 toTree hPath mapHead rFile file buf = do
