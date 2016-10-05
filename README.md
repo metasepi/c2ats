@@ -114,3 +114,5 @@ The other examples are found at [example](./example/) directory.
 ## License
 
 GPLv3 or later.
+
+Copyright (c) 2016 Metasepi Team.
