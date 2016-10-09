@@ -134,6 +134,8 @@ createSATS oDir mapHead cTrees sGlobal =
       when isNotExist $ do
         createDirectoryIfMissing True $ takeDirectory sats
         BL.writeFile sats $ BLC.pack $ "// File: " ++ rPath -<.> ".sats\n"
+        BL.writeFile sats $ BLC.pack $
+          "#include \"" ++ oDir </> "c2ats_prelude.sats\"\n"
         when (not . null $ sub) $
           BL.appendFile sats $ foldr stainc "" sub
         BL.appendFile sats $ BLC.pack inc
