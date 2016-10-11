@@ -15,6 +15,6 @@ test: all
 	@echo "run ./test_prog manually..."
 
 clean:
-	rm -f example.sats *_dats.c *.o test_prog out config.hats
+	rm -rf example.sats *_dats.c *.o test_prog out config.hats
 
 .PHONY: all clean test
