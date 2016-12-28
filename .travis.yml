@@ -8,9 +8,9 @@ language: c
 matrix:
   include:
   - env: CABALVER=1.24 GHCVER=7.10.3 ALEXVER=3.1.7 HAPPYVER=1.19.5
-    addons: {apt: {packages: [cabal-install-1.24,ghc-7.10.3,alex-3.1.7,happy-1.19.5,libgmp-dev,libgtk-3-dev], sources: [hvr-ghc]}}
+    addons: {apt: {packages: [cabal-install-1.24,ghc-7.10.3,alex-3.1.7,happy-1.19.5,libgmp-dev,libgtk-3-dev,realpath], sources: [hvr-ghc]}}
   - env: CABALVER=head GHCVER=head ALEXVER=3.1.7 HAPPYVER=1.19.5
-    addons: {apt: {packages: [cabal-install-head,ghc-head,alex-3.1.7,happy-1.19.5,libgmp-dev,libgtk-3-dev],  sources: [hvr-ghc]}}
+    addons: {apt: {packages: [cabal-install-head,ghc-head,alex-3.1.7,happy-1.19.5,libgmp-dev,libgtk-3-dev,realpath],  sources: [hvr-ghc]}}
 
 before_install:
   - date
