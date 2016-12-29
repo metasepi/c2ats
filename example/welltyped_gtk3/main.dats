@@ -48,15 +48,13 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
   prval () = fpfgchar pfgchar
 
   // g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
-  val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "clicked"
-  val _ = fun_c2ats_g_signal_connect_data (pfgchar |
-    button, pgchar, $UN.cast print_hello, the_null_ptr, $UN.cast the_null_ptr, 0)
+  val _ = fun_c2ats_g_signal_connect_data (
+    button, "clicked", $UN.cast print_hello, the_null_ptr, $UN.cast the_null_ptr, 0)
 
   // g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_widget_destroy), window);
-  val _ = fun_c2ats_g_signal_connect_data (pfgchar | button, pgchar,
+  val _ = fun_c2ats_g_signal_connect_data (button, "clicked",
     $UN.cast fun_c2ats_gtk_widget_destroy, window, $UN.cast the_null_ptr,
     enum_c2ats_G_CONNECT_SWAPPED)
-  prval () = fpfgchar pfgchar
 
   // gtk_container_add (GTK_CONTAINER (button_box), button);
   prval pfcontainer = __create_view ()
@@ -76,10 +74,8 @@ implement main0 (argc, argv) = {
     fun_c2ats_gtk_application_new ("org.gtk.example", enum_c2ats_G_APPLICATION_FLAGS_NONE)
 
   // g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-  val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "activate"
-  val _ = fun_c2ats_g_signal_connect_data (pfgchar |
-    app, pgchar, $UN.cast activate, the_null_ptr, $UN.cast the_null_ptr, 0)
-  prval () = fpfgchar pfgchar
+  val _ = fun_c2ats_g_signal_connect_data (
+    app, "activate", $UN.cast activate, the_null_ptr, $UN.cast the_null_ptr, 0)
 
   // status = g_application_run (G_APPLICATION (app), argc, argv);
   prval pfgapp = __create_view ()

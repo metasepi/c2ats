@@ -3987,7 +3987,7 @@ fun fun_c2ats_g_signal_remove_emission_hook: (type_c2ats_guint, type_c2ats_gulon
 fun fun_c2ats_g_signal_has_handler_pending: (type_c2ats_gpointer, type_c2ats_guint, type_c2ats_GQuark, type_c2ats_gboolean) -> type_c2ats_gboolean = "mac#g_signal_has_handler_pending"
 fun fun_c2ats_g_signal_connect_closure_by_id: {l1:addr} (!ptr_v_1(type_c2ats_GClosure, l1) | type_c2ats_gpointer, type_c2ats_guint, type_c2ats_GQuark, ptr l1, type_c2ats_gboolean) -> type_c2ats_gulong = "mac#g_signal_connect_closure_by_id"
 fun fun_c2ats_g_signal_connect_closure: {l1,l2:addr} (!ptr_v_1(type_c2ats_gchar, l1), !ptr_v_1(type_c2ats_GClosure, l2) | type_c2ats_gpointer, ptr l1, ptr l2, type_c2ats_gboolean) -> type_c2ats_gulong = "mac#g_signal_connect_closure"
-fun fun_c2ats_g_signal_connect_data: {l1:addr} (!ptr_v_1(type_c2ats_gchar, l1) | type_c2ats_gpointer, ptr l1, type_c2ats_GCallback, type_c2ats_gpointer, type_c2ats_GClosureNotify, type_c2ats_GConnectFlags) -> type_c2ats_gulong = "mac#g_signal_connect_data"
+fun fun_c2ats_g_signal_connect_data: (type_c2ats_gpointer, string, type_c2ats_GCallback, type_c2ats_gpointer, type_c2ats_GClosureNotify, type_c2ats_GConnectFlags) -> type_c2ats_gulong = "mac#g_signal_connect_data"
 fun fun_c2ats_g_signal_handler_block: (type_c2ats_gpointer, type_c2ats_gulong) -> void = "mac#g_signal_handler_block"
 fun fun_c2ats_g_signal_handler_unblock: (type_c2ats_gpointer, type_c2ats_gulong) -> void = "mac#g_signal_handler_unblock"
 fun fun_c2ats_g_signal_handler_disconnect: (type_c2ats_gpointer, type_c2ats_gulong) -> void = "mac#g_signal_handler_disconnect"
@@ -15261,7 +15261,7 @@ typedef struct_c2ats__GtkApplicationClass = $extype_struct"struct _GtkApplicatio
   padding = @[type_c2ats_gpointer][12]
 }
 fun fun_c2ats_gtk_application_get_type: () -> type_c2ats_GType = "mac#gtk_application_get_type"
-fun fun_c2ats_gtk_application_new: {l1:addr} (string, type_c2ats_GApplicationFlags) -> [l2:addr] (ptr_v_1(type_c2ats_GtkApplication, l2) | ptr l2) = "mac#gtk_application_new"
+fun fun_c2ats_gtk_application_new: (string, type_c2ats_GApplicationFlags) -> [l2:addr] (ptr_v_1(type_c2ats_GtkApplication, l2) | ptr l2) = "mac#gtk_application_new"
 fun fun_c2ats_gtk_application_add_window: {l1,l2:addr} (!ptr_v_1(type_c2ats_GtkApplication, l1), !ptr_v_1(type_c2ats_GtkWindow, l2) | ptr l1, ptr l2) -> void = "mac#gtk_application_add_window"
 fun fun_c2ats_gtk_application_remove_window: {l1,l2:addr} (!ptr_v_1(type_c2ats_GtkApplication, l1), !ptr_v_1(type_c2ats_GtkWindow, l2) | ptr l1, ptr l2) -> void = "mac#gtk_application_remove_window"
 fun fun_c2ats_gtk_application_get_windows: {l1:addr} (!ptr_v_1(type_c2ats_GtkApplication, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GList, l2) | ptr l2) = "mac#gtk_application_get_windows"
