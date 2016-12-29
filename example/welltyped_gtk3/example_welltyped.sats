@@ -1,3 +1,4 @@
+// Based on 
 // File: example.h
 %{#
 #include <gtk/gtk.h>
@@ -11,68 +12,8 @@ dataview ptr_v_2 (a:t@ype+, l0: addr, l1: addr) =
 dataview ptr_v_3 (a:t@ype+, l0:addr, l1:addr, l2:addr) =
   | ptr_v_3_cons(a, l0, l1, l2) of (ptr l1 @ l0, ptr_v_2 (a, l1, l2))
 // No file
-fun fun_c2ats___builtin_extract_return_addr: (ptr) -> ptr = "mac#__builtin_extract_return_addr"
-macdef takeout_c2ats___FUNCTION__ = $extval([l1:addr] (ptr_v_1(@[char][0], l1) | ptr l1), "&__FUNCTION__")
-praxi addback_c2ats___FUNCTION__ {l1:addr} (ptr_v_1(@[char][0], l1) | ptr l1): void
-fun fun_c2ats___builtin___snprintf_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, int, int, int, ptr l2) -> int = "mac#__builtin___snprintf_chk"
-fun fun_c2ats___builtin___vsprintf_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, int, int, ptr l2, type_c2ats___gnuc_va_list) -> int = "mac#__builtin___vsprintf_chk"
-fun fun_c2ats___builtin___memcpy_chk: (ptr, ptr, int, int) -> ptr = "mac#__builtin___memcpy_chk"
-fun fun_c2ats___builtin___stpcpy_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin___stpcpy_chk"
-fun fun_c2ats___builtin___strcat_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin___strcat_chk"
-fun fun_c2ats___builtin___strcpy_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin___strcpy_chk"
-fun fun_c2ats___builtin___sprintf_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, int, int, ptr l2) -> int = "mac#__builtin___sprintf_chk"
-fun fun_c2ats___builtin_return_address: (uint) -> ptr = "mac#__builtin_return_address"
-fun fun_c2ats___builtin_va_arg_pack: () -> int = "mac#__builtin_va_arg_pack"
-fun fun_c2ats___builtin___memmove_chk: (ptr, ptr, int, int) -> ptr = "mac#__builtin___memmove_chk"
-fun fun_c2ats___builtin___vsnprintf_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, int, int, int, ptr l2, type_c2ats___gnuc_va_list) -> int = "mac#__builtin___vsnprintf_chk"
-fun fun_c2ats___builtin___strncat_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin___strncat_chk"
-fun fun_c2ats___builtin___strncpy_chk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin___strncpy_chk"
-fun fun_c2ats___builtin___mempcpy_chk: (ptr, ptr, int, int) -> ptr = "mac#__builtin___mempcpy_chk"
-fun fun_c2ats___builtin___memset_chk: (ptr, int, int, int) -> ptr = "mac#__builtin___memset_chk"
-fun fun_c2ats___builtin_constant_p: (type_c2ats___any) -> int = "mac#__builtin_constant_p"
-fun fun_c2ats___builtin_va_start: (type_c2ats___gnuc_va_list, ptr) -> void = "mac#__builtin_va_start"
-fun fun_c2ats___builtin_frame_address: (uint) -> ptr = "mac#__builtin_frame_address"
-fun fun_c2ats___builtin_va_end: (type_c2ats___gnuc_va_list) -> void = "mac#__builtin_va_end"
-fun fun_c2ats___builtin_alloca: (int) -> ptr = "mac#__builtin_alloca"
-fun fun_c2ats___builtin_object_size: (ptr, int) -> int = "mac#__builtin_object_size"
-fun fun_c2ats___builtin_va_copy: (type_c2ats___gnuc_va_list, type_c2ats___gnuc_va_list) -> void = "mac#__builtin_va_copy"
-fun fun_c2ats___builtin_strncat: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin_strncat"
-fun fun_c2ats___builtin_copysign: (double, double) -> double = "mac#__builtin_copysign"
-fun fun_c2ats___builtin_memcpy: (ptr, ptr, int) -> ptr = "mac#__builtin_memcpy"
-fun fun_c2ats___builtin_fabs: (double) -> double = "mac#__builtin_fabs"
-fun fun_c2ats___builtin_fabsf: (float) -> float = "mac#__builtin_fabsf"
-fun fun_c2ats___builtin_fabsl: (ldouble) -> ldouble = "mac#__builtin_fabsl"
-fun fun_c2ats___builtin_strspn: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> int = "mac#__builtin_strspn"
-fun fun_c2ats___builtin_strncpy: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin_strncpy"
-fun fun_c2ats___builtin_strcmp: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> int = "mac#__builtin_strcmp"
-fun fun_c2ats___builtin_strcspn: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> int = "mac#__builtin_strcspn"
-fun fun_c2ats___builtin_strpbrk: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#__builtin_strpbrk"
-fun fun_c2ats___builtin_prefetch: (ptr) -> void = "mac#__builtin_prefetch"
-fun fun_c2ats___builtin_strchr: {l1:addr} (!ptr_v_1(char, l1) | ptr l1, int) -> [l2:addr] (ptr_v_1(char, l2) | ptr l2) = "mac#__builtin_strchr"
-macdef takeout_c2ats___PRETTY_FUNCTION__ = $extval([l1:addr] (ptr_v_1(@[char][0], l1) | ptr l1), "&__PRETTY_FUNCTION__")
-praxi addback_c2ats___PRETTY_FUNCTION__ {l1:addr} (ptr_v_1(@[char][0], l1) | ptr l1): void
-fun fun_c2ats___builtin_huge_val: () -> double = "mac#__builtin_huge_val"
-fun fun_c2ats___builtin_clz: (uint) -> int = "mac#__builtin_clz"
-fun fun_c2ats___builtin_huge_valf: () -> float = "mac#__builtin_huge_valf"
-fun fun_c2ats___builtin_huge_vall: () -> ldouble = "mac#__builtin_huge_vall"
-fun fun_c2ats___builtin_expect: (lint, lint) -> lint = "mac#__builtin_expect"
-fun fun_c2ats___builtin_inf: () -> double = "mac#__builtin_inf"
-fun fun_c2ats___builtin_inff: () -> float = "mac#__builtin_inff"
-fun fun_c2ats___builtin_infl: () -> ldouble = "mac#__builtin_infl"
-macdef takeout_c2ats___func__ = $extval([l1:addr] (ptr_v_1(@[char][0], l1) | ptr l1), "&__func__")
-praxi addback_c2ats___func__ {l1:addr} (ptr_v_1(@[char][0], l1) | ptr l1): void
-fun fun_c2ats___builtin_bzero: (ptr, int) -> void = "mac#__builtin_bzero"
-fun fun_c2ats___builtin_va_arg_pack_len: () -> int = "mac#__builtin_va_arg_pack_len"
-typedef type_c2ats___builtin_va_list = type_c2ats___gnuc_va_list
-// File: /usr/lib/gcc/x86_64-linux-gnu/6/include/stddef.h
-typedef type_c2ats_ptrdiff_t = lint
 typedef type_c2ats_size_t = ulint
-typedef type_c2ats_wchar_t = int
-typedef struct_c2ats_anon_42 = $extype_struct"struct { __aligned__ (...) long long int __max_align_ll; __aligned__ (...) long double __max_align_ld; }" of {
-  __max_align_ll = llint,
-  __max_align_ld = ldouble
-}
-typedef type_c2ats_max_align_t = struct_c2ats_anon_42
+typedef type_c2ats___builtin_va_list = type_c2ats___gnuc_va_list
 // File: /usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h
 typedef type_c2ats_gint8 = schar
 typedef type_c2ats_guint8 = uchar
