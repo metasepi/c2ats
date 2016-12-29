@@ -8,7 +8,6 @@ staload "example.sats"
 
 // Unsafe!
 extern praxi __create_view {to:view} ():<prf> to
-extern praxi __keep_castview {to:view}{from:view} (pf: !from):<prf> to
 extern praxi __consume_view {from:view} (pf: from):<prf> void
 
 fun{} take_gcharp2tr (s: string):
@@ -26,7 +25,7 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
   val (pfwindow | window) = fun_c2ats_gtk_application_window_new (pfapp | app)
 
   // gtk_window_set_title (GTK_WINDOW (window), "Window");
-  prval pfgtkwin = __keep_castview pfwindow
+  prval pfgtkwin = __create_view ()
   val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "Window"
   val () = fun_c2ats_gtk_window_set_title (pfgtkwin, pfgchar | window, pgchar)
   prval () = fpfgchar pfgchar
@@ -39,7 +38,7 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
   val (pfbox | box) = fun_c2ats_gtk_button_box_new enum_c2ats_GTK_ORIENTATION_HORIZONTAL
 
   // gtk_container_add (GTK_CONTAINER (window), button_box);
-  prval pfcontainer = __keep_castview pfwindow
+  prval pfcontainer = __create_view ()
   val () = fun_c2ats_gtk_container_add (pfcontainer, pfbox | window, box)
   prval () = __consume_view pfcontainer
 
@@ -60,7 +59,7 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
   prval () = fpfgchar pfgchar
 
   // gtk_container_add (GTK_CONTAINER (button_box), button);
-  prval pfcontainer = __keep_castview pfbox
+  prval pfcontainer = __create_view ()
   val () = fun_c2ats_gtk_container_add (pfcontainer, pfbutton | box, button)
   prval () = __consume_view pfcontainer
   prval () = __consume_view pfbutton
@@ -85,7 +84,7 @@ implement main0 () = {
   prval () = fpfgchar pfgchar
 
   // status = g_application_run (G_APPLICATION (app), argc, argv);
-  prval pfgapp = __keep_castview pfapp
+  prval pfgapp = __create_view ()
   prval pfargv = __create_view ()
   val argv = $UN.castvwtp0 the_null_ptr
   val status = fun_c2ats_g_application_run (pfgapp, pfargv | app, 0, argv)
