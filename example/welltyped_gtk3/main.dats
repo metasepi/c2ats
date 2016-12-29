@@ -72,10 +72,8 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
 
 implement main0 (argc, argv) = {
   // app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
-  val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "org.gtk.example"
   val (pfapp | app) =
-    fun_c2ats_gtk_application_new (pfgchar | pgchar, enum_c2ats_G_APPLICATION_FLAGS_NONE)
-  prval () = fpfgchar pfgchar
+    fun_c2ats_gtk_application_new ("org.gtk.example", enum_c2ats_G_APPLICATION_FLAGS_NONE)
 
   // g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
   val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "activate"

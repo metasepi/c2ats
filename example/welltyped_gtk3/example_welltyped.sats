@@ -15261,7 +15261,7 @@ typedef struct_c2ats__GtkApplicationClass = $extype_struct"struct _GtkApplicatio
   padding = @[type_c2ats_gpointer][12]
 }
 fun fun_c2ats_gtk_application_get_type: () -> type_c2ats_GType = "mac#gtk_application_get_type"
-fun fun_c2ats_gtk_application_new: {l1:addr} (!ptr_v_1(type_c2ats_gchar, l1) | ptr l1, type_c2ats_GApplicationFlags) -> [l2:addr] (ptr_v_1(type_c2ats_GtkApplication, l2) | ptr l2) = "mac#gtk_application_new"
+fun fun_c2ats_gtk_application_new: {l1:addr} (string, type_c2ats_GApplicationFlags) -> [l2:addr] (ptr_v_1(type_c2ats_GtkApplication, l2) | ptr l2) = "mac#gtk_application_new"
 fun fun_c2ats_gtk_application_add_window: {l1,l2:addr} (!ptr_v_1(type_c2ats_GtkApplication, l1), !ptr_v_1(type_c2ats_GtkWindow, l2) | ptr l1, ptr l2) -> void = "mac#gtk_application_add_window"
 fun fun_c2ats_gtk_application_remove_window: {l1,l2:addr} (!ptr_v_1(type_c2ats_GtkApplication, l1), !ptr_v_1(type_c2ats_GtkWindow, l2) | ptr l1, ptr l2) -> void = "mac#gtk_application_remove_window"
 fun fun_c2ats_gtk_application_get_windows: {l1:addr} (!ptr_v_1(type_c2ats_GtkApplication, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GList, l2) | ptr l2) = "mac#gtk_application_get_windows"
