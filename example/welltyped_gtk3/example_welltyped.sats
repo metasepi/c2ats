@@ -1,4 +1,3 @@
-// Based on 
 // File: example.h
 %{#
 #include <gtk/gtk.h>
@@ -24459,7 +24458,6 @@ static inline gchar* take_struct_c2ats__GIOChannel_line_term(struct _GIOChannel 
 static inline GString* take_struct_c2ats__GIOChannel_read_buf(struct _GIOChannel *p) { return (GString*) p->read_buf; }
 static inline GString* take_struct_c2ats__GIOChannel_encoded_read_buf(struct _GIOChannel *p) { return (GString*) p->encoded_read_buf; }
 static inline GString* take_struct_c2ats__GIOChannel_write_buf(struct _GIOChannel *p) { return (GString*) p->write_buf; }
-static inline gchar* take_struct_c2ats__GLogField_key(struct _GLogField *p) { return (gchar*) p->key; }
 static inline gchar* take_struct_c2ats__GOptionEntry_long_name(struct _GOptionEntry *p) { return (gchar*) p->long_name; }
 static inline gchar* take_struct_c2ats__GOptionEntry_description(struct _GOptionEntry *p) { return (gchar*) p->description; }
 static inline gchar* take_struct_c2ats__GOptionEntry_arg_description(struct _GOptionEntry *p) { return (gchar*) p->arg_description; }
@@ -24524,13 +24522,6 @@ static inline GSList* take_struct_c2ats__GTypeModule_type_infos(struct _GTypeMod
 static inline GSList* take_struct_c2ats__GTypeModule_interface_infos(struct _GTypeModule *p) { return (GSList*) p->interface_infos; }
 static inline gchar* take_struct_c2ats__GTypeModule_name(struct _GTypeModule *p) { return (gchar*) p->name; }
 static inline GValue* take_struct_c2ats__GValueArray_values(struct _GValueArray *p) { return (GValue*) p->values; }
-static inline GSocketAddress** take_struct_c2ats__GInputMessage_address(struct _GInputMessage *p) { return (GSocketAddress**) p->address; }
-static inline GInputVector* take_struct_c2ats__GInputMessage_vectors(struct _GInputMessage *p) { return (GInputVector*) p->vectors; }
-static inline GSocketControlMessage*** take_struct_c2ats__GInputMessage_control_messages(struct _GInputMessage *p) { return (GSocketControlMessage***) p->control_messages; }
-static inline guint* take_struct_c2ats__GInputMessage_num_control_messages(struct _GInputMessage *p) { return (guint*) p->num_control_messages; }
-static inline GSocketAddress* take_struct_c2ats__GOutputMessage_address(struct _GOutputMessage *p) { return (GSocketAddress*) p->address; }
-static inline GOutputVector* take_struct_c2ats__GOutputMessage_vectors(struct _GOutputMessage *p) { return (GOutputVector*) p->vectors; }
-static inline GSocketControlMessage** take_struct_c2ats__GOutputMessage_control_messages(struct _GOutputMessage *p) { return (GSocketControlMessage**) p->control_messages; }
 static inline gchar* take_struct_c2ats__GActionEntry_name(struct _GActionEntry *p) { return (gchar*) p->name; }
 static inline gchar* take_struct_c2ats__GActionEntry_parameter_type(struct _GActionEntry *p) { return (gchar*) p->parameter_type; }
 static inline gchar* take_struct_c2ats__GActionEntry_state(struct _GActionEntry *p) { return (gchar*) p->state; }
@@ -24628,7 +24619,6 @@ static inline PangoAttrClass* take_struct_c2ats__PangoAttribute_klass(struct _Pa
 static inline char* take_struct_c2ats__PangoAttrString_value(struct _PangoAttrString *p) { return (char*) p->value; }
 static inline PangoLanguage* take_struct_c2ats__PangoAttrLanguage_value(struct _PangoAttrLanguage *p) { return (PangoLanguage*) p->value; }
 static inline PangoFontDescription* take_struct_c2ats__PangoAttrFontDesc_desc(struct _PangoAttrFontDesc *p) { return (PangoFontDescription*) p->desc; }
-static inline gchar* take_struct_c2ats__PangoAttrFontFeatures_features(struct _PangoAttrFontFeatures *p) { return (gchar*) p->features; }
 static inline PangoEngineShape* take_struct_c2ats__PangoAnalysis_shape_engine(struct _PangoAnalysis *p) { return (PangoEngineShape*) p->shape_engine; }
 static inline PangoEngineLang* take_struct_c2ats__PangoAnalysis_lang_engine(struct _PangoAnalysis *p) { return (PangoEngineLang*) p->lang_engine; }
 static inline PangoFont* take_struct_c2ats__PangoAnalysis_font(struct _PangoAnalysis *p) { return (PangoFont*) p->font; }
@@ -24698,11 +24688,6 @@ static inline GdkWindow* take_struct_c2ats__GdkEventGrabBroken_window(struct _Gd
 static inline GdkWindow* take_struct_c2ats__GdkEventGrabBroken_grab_window(struct _GdkEventGrabBroken *p) { return (GdkWindow*) p->grab_window; }
 static inline GdkWindow* take_struct_c2ats__GdkEventDND_window(struct _GdkEventDND *p) { return (GdkWindow*) p->window; }
 static inline GdkDragContext* take_struct_c2ats__GdkEventDND_context(struct _GdkEventDND *p) { return (GdkDragContext*) p->context; }
-static inline GdkWindow* take_struct_c2ats__GdkEventTouchpadSwipe_window(struct _GdkEventTouchpadSwipe *p) { return (GdkWindow*) p->window; }
-static inline GdkWindow* take_struct_c2ats__GdkEventTouchpadPinch_window(struct _GdkEventTouchpadPinch *p) { return (GdkWindow*) p->window; }
-static inline GdkWindow* take_struct_c2ats__GdkEventPadButton_window(struct _GdkEventPadButton *p) { return (GdkWindow*) p->window; }
-static inline GdkWindow* take_struct_c2ats__GdkEventPadAxis_window(struct _GdkEventPadAxis *p) { return (GdkWindow*) p->window; }
-static inline GdkWindow* take_struct_c2ats__GdkEventPadGroupMode_window(struct _GdkEventPadGroupMode *p) { return (GdkWindow*) p->window; }
 static inline gchar* take_struct_c2ats__GdkWindowAttr_title(struct _GdkWindowAttr *p) { return (gchar*) p->title; }
 static inline GdkVisual* take_struct_c2ats__GdkWindowAttr_visual(struct _GdkWindowAttr *p) { return (GdkVisual*) p->visual; }
 static inline GdkCursor* take_struct_c2ats__GdkWindowAttr_cursor(struct _GdkWindowAttr *p) { return (GdkCursor*) p->cursor; }
@@ -24757,7 +24742,6 @@ static inline PangoTabArray* take_struct_c2ats__GtkTextAttributes_tabs(struct _G
 static inline PangoLanguage* take_struct_c2ats__GtkTextAttributes_language(struct _GtkTextAttributes *p) { return (PangoLanguage*) p->language; }
 static inline GdkColor* take_struct_c2ats__GtkTextAttributes_pg_bg_color(struct _GtkTextAttributes *p) { return (GdkColor*) p->pg_bg_color; }
 static inline GdkRGBA* take_struct_c2ats__GtkTextAttributes_pg_bg_rgba(struct _GtkTextAttributes *p) { return (GdkRGBA*) p->pg_bg_rgba; }
-static inline gchar* take_struct_c2ats__GtkTextAttributes_font_features(struct _GtkTextAttributes *p) { return (gchar*) p->font_features; }
 static inline GtkTextTagPrivate* take_struct_c2ats__GtkTextTag_priv(struct _GtkTextTag *p) { return (GtkTextTagPrivate*) p->priv; }
 static inline gchar* take_struct_c2ats__GtkTargetEntry_target(struct _GtkTargetEntry *p) { return (gchar*) p->target; }
 static inline GtkEntryBufferPrivate* take_struct_c2ats__GtkEntryBuffer_priv(struct _GtkEntryBuffer *p) { return (GtkEntryBufferPrivate*) p->priv; }
@@ -24843,7 +24827,6 @@ static inline GtkLevelBarPrivate* take_struct_c2ats__GtkLevelBar_priv(struct _Gt
 static inline GtkLinkButtonPrivate* take_struct_c2ats__GtkLinkButton_priv(struct _GtkLinkButton *p) { return (GtkLinkButtonPrivate*) p->priv; }
 static inline GtkLockButtonPrivate* take_struct_c2ats__GtkLockButton_priv(struct _GtkLockButton *p) { return (GtkLockButtonPrivate*) p->priv; }
 static inline GtkMenuBarPrivate* take_struct_c2ats__GtkMenuBar_priv(struct _GtkMenuBar *p) { return (GtkMenuBarPrivate*) p->priv; }
-static inline GtkPopoverPrivate* take_struct_c2ats__GtkPopover_priv(struct _GtkPopover *p) { return (GtkPopoverPrivate*) p->priv; }
 static inline GtkMenuButtonPrivate* take_struct_c2ats__GtkMenuButton_priv(struct _GtkMenuButton *p) { return (GtkMenuButtonPrivate*) p->priv; }
 static inline GtkSizeGroupPrivate* take_struct_c2ats__GtkSizeGroup_priv(struct _GtkSizeGroup *p) { return (GtkSizeGroupPrivate*) p->priv; }
 static inline GtkToolItemPrivate* take_struct_c2ats__GtkToolItem_priv(struct _GtkToolItem *p) { return (GtkToolItemPrivate*) p->priv; }
@@ -24853,8 +24836,6 @@ static inline GtkMessageDialogPrivate* take_struct_c2ats__GtkMessageDialog_priv(
 static inline GtkMountOperationPrivate* take_struct_c2ats__GtkMountOperation_priv(struct _GtkMountOperation *p) { return (GtkMountOperationPrivate*) p->priv; }
 static inline GtkNotebookPrivate* take_struct_c2ats__GtkNotebook_priv(struct _GtkNotebook *p) { return (GtkNotebookPrivate*) p->priv; }
 static inline GtkOverlayPrivate* take_struct_c2ats__GtkOverlay_priv(struct _GtkOverlay *p) { return (GtkOverlayPrivate*) p->priv; }
-static inline gchar* take_struct_c2ats__GtkPadActionEntry_label(struct _GtkPadActionEntry *p) { return (gchar*) p->label; }
-static inline gchar* take_struct_c2ats__GtkPadActionEntry_action_name(struct _GtkPadActionEntry *p) { return (gchar*) p->action_name; }
 static inline GtkPanedPrivate* take_struct_c2ats__GtkPaned_priv(struct _GtkPaned *p) { return (GtkPanedPrivate*) p->priv; }
 static inline GtkPrintOperationPrivate* take_struct_c2ats__GtkPrintOperation_priv(struct _GtkPrintOperation *p) { return (GtkPrintOperationPrivate*) p->priv; }
 static inline GtkProgressBarPrivate* take_struct_c2ats__GtkProgressBar_priv(struct _GtkProgressBar *p) { return (GtkProgressBarPrivate*) p->priv; }
@@ -24986,7 +24967,6 @@ fun take_struct_c2ats__GIOChannel_line_term: {l1:agz} (!ptr_v_1(struct_c2ats__GI
 fun take_struct_c2ats__GIOChannel_read_buf: {l1:agz} (!ptr_v_1(struct_c2ats__GIOChannel, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GString, l2), ptr_v_1(type_c2ats_GString, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GIOChannel_encoded_read_buf: {l1:agz} (!ptr_v_1(struct_c2ats__GIOChannel, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GString, l2), ptr_v_1(type_c2ats_GString, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GIOChannel_write_buf: {l1:agz} (!ptr_v_1(struct_c2ats__GIOChannel, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GString, l2), ptr_v_1(type_c2ats_GString, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GLogField_key: {l1:agz} (!ptr_v_1(struct_c2ats__GLogField, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GOptionEntry_long_name: {l1:agz} (!ptr_v_1(struct_c2ats__GOptionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GOptionEntry_description: {l1:agz} (!ptr_v_1(struct_c2ats__GOptionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GOptionEntry_arg_description: {l1:agz} (!ptr_v_1(struct_c2ats__GOptionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
@@ -25051,13 +25031,6 @@ fun take_struct_c2ats__GTypeModule_type_infos: {l1:agz} (!ptr_v_1(struct_c2ats__
 fun take_struct_c2ats__GTypeModule_interface_infos: {l1:agz} (!ptr_v_1(struct_c2ats__GTypeModule, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GSList, l2), ptr_v_1(type_c2ats_GSList, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GTypeModule_name: {l1:agz} (!ptr_v_1(struct_c2ats__GTypeModule, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GValueArray_values: {l1:agz} (!ptr_v_1(struct_c2ats__GValueArray, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GValue, l2), ptr_v_1(type_c2ats_GValue, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GInputMessage_address: {l1:agz} (!ptr_v_1(struct_c2ats__GInputMessage, l1) | ptr l1) -> [l2,l2_1:addr] (ptr_v_2(type_c2ats_GSocketAddress, l2, l2_1), ptr_v_2(type_c2ats_GSocketAddress, l2, l2_1) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GInputMessage_vectors: {l1:agz} (!ptr_v_1(struct_c2ats__GInputMessage, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GInputVector, l2), ptr_v_1(type_c2ats_GInputVector, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GInputMessage_control_messages: {l1:agz} (!ptr_v_1(struct_c2ats__GInputMessage, l1) | ptr l1) -> [l2,l2_1,l2_2:addr] (ptr_v_3(type_c2ats_GSocketControlMessage, l2, l2_1, l2_2), ptr_v_3(type_c2ats_GSocketControlMessage, l2, l2_1, l2_2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GInputMessage_num_control_messages: {l1:agz} (!ptr_v_1(struct_c2ats__GInputMessage, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_guint, l2), ptr_v_1(type_c2ats_guint, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GOutputMessage_address: {l1:agz} (!ptr_v_1(struct_c2ats__GOutputMessage, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GSocketAddress, l2), ptr_v_1(type_c2ats_GSocketAddress, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GOutputMessage_vectors: {l1:agz} (!ptr_v_1(struct_c2ats__GOutputMessage, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GOutputVector, l2), ptr_v_1(type_c2ats_GOutputVector, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GOutputMessage_control_messages: {l1:agz} (!ptr_v_1(struct_c2ats__GOutputMessage, l1) | ptr l1) -> [l2,l2_1:addr] (ptr_v_2(type_c2ats_GSocketControlMessage, l2, l2_1), ptr_v_2(type_c2ats_GSocketControlMessage, l2, l2_1) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GActionEntry_name: {l1:agz} (!ptr_v_1(struct_c2ats__GActionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GActionEntry_parameter_type: {l1:agz} (!ptr_v_1(struct_c2ats__GActionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GActionEntry_state: {l1:agz} (!ptr_v_1(struct_c2ats__GActionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
@@ -25155,7 +25128,6 @@ fun take_struct_c2ats__PangoAttribute_klass: {l1:agz} (!ptr_v_1(struct_c2ats__Pa
 fun take_struct_c2ats__PangoAttrString_value: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAttrString, l1) | ptr l1) -> [l2:addr] (ptr_v_1(char, l2), ptr_v_1(char, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__PangoAttrLanguage_value: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAttrLanguage, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_PangoLanguage, l2), ptr_v_1(type_c2ats_PangoLanguage, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__PangoAttrFontDesc_desc: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAttrFontDesc, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_PangoFontDescription, l2), ptr_v_1(type_c2ats_PangoFontDescription, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__PangoAttrFontFeatures_features: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAttrFontFeatures, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__PangoAnalysis_shape_engine: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAnalysis, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_PangoEngineShape, l2), ptr_v_1(type_c2ats_PangoEngineShape, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__PangoAnalysis_lang_engine: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAnalysis, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_PangoEngineLang, l2), ptr_v_1(type_c2ats_PangoEngineLang, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__PangoAnalysis_font: {l1:agz} (!ptr_v_1(struct_c2ats__PangoAnalysis, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_PangoFont, l2), ptr_v_1(type_c2ats_PangoFont, l2) -<lin,prf> void | ptr l2) = "mac#"
@@ -25225,11 +25197,6 @@ fun take_struct_c2ats__GdkEventGrabBroken_window: {l1:agz} (!ptr_v_1(struct_c2at
 fun take_struct_c2ats__GdkEventGrabBroken_grab_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventGrabBroken, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GdkEventDND_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventDND, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GdkEventDND_context: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventDND, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkDragContext, l2), ptr_v_1(type_c2ats_GdkDragContext, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GdkEventTouchpadSwipe_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventTouchpadSwipe, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GdkEventTouchpadPinch_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventTouchpadPinch, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GdkEventPadButton_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventPadButton, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GdkEventPadAxis_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventPadAxis, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GdkEventPadGroupMode_window: {l1:agz} (!ptr_v_1(struct_c2ats__GdkEventPadGroupMode, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkWindow, l2), ptr_v_1(type_c2ats_GdkWindow, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GdkWindowAttr_title: {l1:agz} (!ptr_v_1(struct_c2ats__GdkWindowAttr, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GdkWindowAttr_visual: {l1:agz} (!ptr_v_1(struct_c2ats__GdkWindowAttr, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkVisual, l2), ptr_v_1(type_c2ats_GdkVisual, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GdkWindowAttr_cursor: {l1:agz} (!ptr_v_1(struct_c2ats__GdkWindowAttr, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkCursor, l2), ptr_v_1(type_c2ats_GdkCursor, l2) -<lin,prf> void | ptr l2) = "mac#"
@@ -25284,7 +25251,6 @@ fun take_struct_c2ats__GtkTextAttributes_tabs: {l1:agz} (!ptr_v_1(struct_c2ats__
 fun take_struct_c2ats__GtkTextAttributes_language: {l1:agz} (!ptr_v_1(struct_c2ats__GtkTextAttributes, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_PangoLanguage, l2), ptr_v_1(type_c2ats_PangoLanguage, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkTextAttributes_pg_bg_color: {l1:agz} (!ptr_v_1(struct_c2ats__GtkTextAttributes, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkColor, l2), ptr_v_1(type_c2ats_GdkColor, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkTextAttributes_pg_bg_rgba: {l1:agz} (!ptr_v_1(struct_c2ats__GtkTextAttributes, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GdkRGBA, l2), ptr_v_1(type_c2ats_GdkRGBA, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GtkTextAttributes_font_features: {l1:agz} (!ptr_v_1(struct_c2ats__GtkTextAttributes, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkTextTag_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkTextTag, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkTextTagPrivate, l2), ptr_v_1(type_c2ats_GtkTextTagPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkTargetEntry_target: {l1:agz} (!ptr_v_1(struct_c2ats__GtkTargetEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkEntryBuffer_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkEntryBuffer, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkEntryBufferPrivate, l2), ptr_v_1(type_c2ats_GtkEntryBufferPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
@@ -25370,7 +25336,6 @@ fun take_struct_c2ats__GtkLevelBar_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkLev
 fun take_struct_c2ats__GtkLinkButton_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkLinkButton, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkLinkButtonPrivate, l2), ptr_v_1(type_c2ats_GtkLinkButtonPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkLockButton_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkLockButton, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkLockButtonPrivate, l2), ptr_v_1(type_c2ats_GtkLockButtonPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkMenuBar_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkMenuBar, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkMenuBarPrivate, l2), ptr_v_1(type_c2ats_GtkMenuBarPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GtkPopover_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkPopover, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkPopoverPrivate, l2), ptr_v_1(type_c2ats_GtkPopoverPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkMenuButton_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkMenuButton, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkMenuButtonPrivate, l2), ptr_v_1(type_c2ats_GtkMenuButtonPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkSizeGroup_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkSizeGroup, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkSizeGroupPrivate, l2), ptr_v_1(type_c2ats_GtkSizeGroupPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkToolItem_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkToolItem, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkToolItemPrivate, l2), ptr_v_1(type_c2ats_GtkToolItemPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
@@ -25380,8 +25345,6 @@ fun take_struct_c2ats__GtkMessageDialog_priv: {l1:agz} (!ptr_v_1(struct_c2ats__G
 fun take_struct_c2ats__GtkMountOperation_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkMountOperation, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkMountOperationPrivate, l2), ptr_v_1(type_c2ats_GtkMountOperationPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkNotebook_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkNotebook, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkNotebookPrivate, l2), ptr_v_1(type_c2ats_GtkNotebookPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkOverlay_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkOverlay, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkOverlayPrivate, l2), ptr_v_1(type_c2ats_GtkOverlayPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GtkPadActionEntry_label: {l1:agz} (!ptr_v_1(struct_c2ats__GtkPadActionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
-fun take_struct_c2ats__GtkPadActionEntry_action_name: {l1:agz} (!ptr_v_1(struct_c2ats__GtkPadActionEntry, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2), ptr_v_1(type_c2ats_gchar, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkPaned_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkPaned, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkPanedPrivate, l2), ptr_v_1(type_c2ats_GtkPanedPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkPrintOperation_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkPrintOperation, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkPrintOperationPrivate, l2), ptr_v_1(type_c2ats_GtkPrintOperationPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
 fun take_struct_c2ats__GtkProgressBar_priv: {l1:agz} (!ptr_v_1(struct_c2ats__GtkProgressBar, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkProgressBarPrivate, l2), ptr_v_1(type_c2ats_GtkProgressBarPrivate, l2) -<lin,prf> void | ptr l2) = "mac#"
