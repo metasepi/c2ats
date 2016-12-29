@@ -15429,7 +15429,7 @@ typedef type_c2ats_GtkWindowPosition = int
 #define enum_c2ats_GTK_WIN_POS_CENTER_ON_PARENT 4
 fun fun_c2ats_gtk_window_get_type: () -> type_c2ats_GType = "mac#gtk_window_get_type"
 fun fun_c2ats_gtk_window_new: (type_c2ats_GtkWindowType) -> [l1:addr] (ptr_v_1(type_c2ats_GtkWidget, l1) | ptr l1) = "mac#gtk_window_new"
-fun fun_c2ats_gtk_window_set_title: {l1,l2:addr} (!ptr_v_1(type_c2ats_GtkWindow, l1), !ptr_v_1(type_c2ats_gchar, l2) | ptr l1, ptr l2) -> void = "mac#gtk_window_set_title"
+fun fun_c2ats_gtk_window_set_title: {l1:addr} (!ptr_v_1(type_c2ats_GtkWindow, l1) | ptr l1, string) -> void = "mac#gtk_window_set_title"
 fun fun_c2ats_gtk_window_get_title: {l1:addr} (!ptr_v_1(type_c2ats_GtkWindow, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_gchar, l2) | ptr l2) = "mac#gtk_window_get_title"
 fun fun_c2ats_gtk_window_set_wmclass: {l1,l2,l3:addr} (!ptr_v_1(type_c2ats_GtkWindow, l1), !ptr_v_1(type_c2ats_gchar, l2), !ptr_v_1(type_c2ats_gchar, l3) | ptr l1, ptr l2, ptr l3) -> void = "mac#gtk_window_set_wmclass"
 fun fun_c2ats_gtk_window_set_role: {l1,l2:addr} (!ptr_v_1(type_c2ats_GtkWindow, l1), !ptr_v_1(type_c2ats_gchar, l2) | ptr l1, ptr l2) -> void = "mac#gtk_window_set_role"
@@ -17841,7 +17841,7 @@ typedef struct_c2ats__GtkButtonClass = $extype_struct"struct _GtkButtonClass" of
 }
 fun fun_c2ats_gtk_button_get_type: () -> type_c2ats_GType = "mac#gtk_button_get_type"
 fun fun_c2ats_gtk_button_new: () -> [l1:addr] (ptr_v_1(type_c2ats_GtkWidget, l1) | ptr l1) = "mac#gtk_button_new"
-fun fun_c2ats_gtk_button_new_with_label: {l1:addr} (!ptr_v_1(type_c2ats_gchar, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkWidget, l2) | ptr l2) = "mac#gtk_button_new_with_label"
+fun fun_c2ats_gtk_button_new_with_label: (string) -> [l2:addr] (ptr_v_1(type_c2ats_GtkWidget, l2) | ptr l2) = "mac#gtk_button_new_with_label"
 fun fun_c2ats_gtk_button_new_from_icon_name: {l1:addr} (!ptr_v_1(type_c2ats_gchar, l1) | ptr l1, type_c2ats_GtkIconSize) -> [l2:addr] (ptr_v_1(type_c2ats_GtkWidget, l2) | ptr l2) = "mac#gtk_button_new_from_icon_name"
 fun fun_c2ats_gtk_button_new_from_stock: {l1:addr} (!ptr_v_1(type_c2ats_gchar, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkWidget, l2) | ptr l2) = "mac#gtk_button_new_from_stock"
 fun fun_c2ats_gtk_button_new_with_mnemonic: {l1:addr} (!ptr_v_1(type_c2ats_gchar, l1) | ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_GtkWidget, l2) | ptr l2) = "mac#gtk_button_new_with_mnemonic"

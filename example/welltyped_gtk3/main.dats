@@ -10,12 +10,6 @@ staload "example_welltyped.sats"
 extern praxi __create_view {to:view} ():<prf> to
 extern praxi __consume_view {from:view} (pf: from):<prf> void
 
-fun{} take_gcharp2tr (s: string):
-  [l:addr] (type_c2ats_gchar@l, type_c2ats_gchar@l -<lin,prf> void | ptr l) = ret where {
-  val p = string2ptr s
-  val ret = $UN.ptr_vtake p
-}
-
 fun print_hello {l:addr} (pfgtkw: !type_c2ats_GtkWidget@l, p: type_c2ats_gpointer): void =
   println! "Hello World"
 
@@ -26,9 +20,7 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
 
   // gtk_window_set_title (GTK_WINDOW (window), "Window");
   prval pfgtkwin = __create_view ()
-  val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "Window"
-  val () = fun_c2ats_gtk_window_set_title (pfgtkwin, pfgchar | window, pgchar)
-  prval () = fpfgchar pfgchar
+  val () = fun_c2ats_gtk_window_set_title (pfgtkwin | window, "Window")
 
   // gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
   val () = fun_c2ats_gtk_window_set_default_size (pfgtkwin | window, 200, 200)
@@ -43,9 +35,7 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
   prval () = __consume_view pfcontainer
 
   // button = gtk_button_new_with_label ("Hello World");
-  val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "Hello World"
-  val (pfbutton | button) = fun_c2ats_gtk_button_new_with_label (pfgchar | pgchar)
-  prval () = fpfgchar pfgchar
+  val (pfbutton | button) = fun_c2ats_gtk_button_new_with_label ("Hello World")
 
   // g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
   val _ = fun_c2ats_g_signal_connect_data (
