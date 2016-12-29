@@ -70,7 +70,7 @@ fun activate {l:addr} (pfapp: !type_c2ats_GtkApplication@l | app: ptr l,
   prval () = __consume_view pfwindow
 }
 
-implement main0 () = {
+implement main0 (argc, argv) = {
   // app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
   val (pfgchar, fpfgchar | pgchar) = take_gcharp2tr "org.gtk.example"
   val (pfapp | app) =
@@ -86,8 +86,8 @@ implement main0 () = {
   // status = g_application_run (G_APPLICATION (app), argc, argv);
   prval pfgapp = __create_view ()
   prval pfargv = __create_view ()
-  val argv = $UN.castvwtp0 the_null_ptr
-  val status = fun_c2ats_g_application_run (pfgapp, pfargv | app, 0, argv)
+  val argv' = $UN.castvwtp0 the_null_ptr
+  val status = fun_c2ats_g_application_run (pfgapp, pfargv | app, 0, argv')
   prval () = __consume_view pfgapp
   prval () = __consume_view pfargv
 
