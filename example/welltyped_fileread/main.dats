@@ -13,7 +13,7 @@ fun my_fread {l:addr}{n:int | n > 0}
   val pbuf = strptr2ptr buf
   val _ = $STRING.memset_unsafe (pbuf, 0, len)
 
-  val r = fun_c2ats_fread (pffp | pbuf, 1UL, $UN.cast2ulint len, fp)
+  val r = fun_c2ats_fread (pffp | buf, 1UL, len, fp)
 
   val ret = (r, buf)
 }
