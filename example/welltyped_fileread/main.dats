@@ -3,7 +3,7 @@
 
 staload UN = "prelude/SATS/unsafe.sats"
 
-staload "example.sats"
+staload "example_welltyped.sats"
 
 fun my_fopen (file: string, mode: string):
   [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {

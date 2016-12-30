@@ -1,15 +1,15 @@
 all: test_prog
 
-test_prog: main.dats example.sats
+test_prog: main.dats example_welltyped.sats
 	patscc -o $@ $< -DATS_MEMALLOC_LIBC
 
-example.sats: example.h
-	c2ats gen $< > $@
+gen:
+	c2ats gen example.h > example_gen.sats
 
 test: all
 	./test_prog
 
 clean:
-	rm -f example.sats *_dats.c *.o test_prog
+	rm -f *_dats.c *.o test_prog
 
-.PHONY: all clean test
+.PHONY: all gen clean test
