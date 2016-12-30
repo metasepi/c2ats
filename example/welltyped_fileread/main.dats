@@ -10,13 +10,12 @@ fun my_fread {l:addr}{n:int | n > 0}
   (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)):
   [m:int] (size_t (m), strnptr (m)) = ret where {
   implement{} string_tabulate$fopr (s) = '_'
-  val buf_strptr  = strnptr2strptr (string_tabulate len)
-  val buf_ptr     = strptr2ptr buf_strptr
+  val buf_strnptr = string_tabulate len
+  val buf_ptr     = strnptr2ptr buf_strnptr
   val _ = $STRING.memset_unsafe (buf_ptr, 0, len)
 
-  val r = fun_c2ats_fread (pffp | buf_strptr, 1UL, len, fp)
+  val r = fun_c2ats_fread (pffp | buf_strnptr, i2sz(1), len, fp)
   val r = $UN.cast r
-  val buf_strnptr = strptr2strnptr buf_strptr
   val ret = (r, buf_strnptr)
 }
 
