@@ -5,21 +5,6 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 staload "example_welltyped.sats"
 
-fun my_fopen (file: string, mode: string):
-  [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {
-  val pn = string2ptr file
-  val (pfnat, fpfnat | pn) = $UN.ptr_vtake pn
-  val pm = string2ptr mode
-  val (pfmat, fpfmat | pm) = $UN.ptr_vtake pm
-
-  val (pffp | fp) = fun_c2ats_fopen (pfnat, pfmat | pn, pm)
-
-  prval () = fpfnat pfnat
-  prval () = fpfmat pfmat
-
-  val ret = (pffp | fp)
-}
-
 fun my_fread {l:addr}{n:int | n > 0}
   (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {
   implement{} string_tabulate$fopr (s) = '_'
@@ -50,7 +35,7 @@ fun readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {
 }
 
 implement main0 () = {
-  val (pffp | fp) = my_fopen ("main.dats", "r")
+  val (pffp | fp) = fun_c2ats_fopen ("main.dats", "r")
   val () = readshow (pffp | fp)
   val r = my_fclose (pffp | fp)
 }
