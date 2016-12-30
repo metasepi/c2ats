@@ -141,7 +141,7 @@ fun fun_c2ats_rename: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr
 fun fun_c2ats_tmpfile: () -> [l1:addr] (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) = "mac#tmpfile"
 fun fun_c2ats_tmpnam: {l1:addr} (!ptr_v_1(char, l1) | ptr l1) -> [l2:addr] (ptr_v_1(char, l2) | ptr l2) = "mac#tmpnam"
 fun fun_c2ats_tempnam: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#tempnam"
-fun fun_c2ats_fclose: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> int = "mac#fclose"
+fun fun_c2ats_fclose: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> int = "mac#fclose"
 fun fun_c2ats_fflush: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> int = "mac#fflush"
 fun fun_c2ats_fopen: (string, string) -> [l3:addr] (ptr_v_1(type_c2ats_FILE, l3) | ptr l3) = "mac#fopen"
 fun fun_c2ats_freopen: {l1,l2,l3:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2), !ptr_v_1(type_c2ats_FILE, l3) | ptr l1, ptr l2, ptr l3) -> [l4:addr] (ptr_v_1(type_c2ats_FILE, l4) | ptr l4) = "mac#freopen"

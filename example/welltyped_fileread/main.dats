@@ -19,14 +19,6 @@ fun my_fread {l:addr}{n:int | n > 0}
   val ret = (r, buf)
 }
 
-fun my_fclose {l:addr} (pffp: type_c2ats_FILE @ l | fp: ptr l): int = ret where {
-  val ret = fun_c2ats_fclose (pffp | fp)
-
-  val fp = __cast (pffp | fp) where {
-    extern castfn __cast: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> ()
-  }
-}
-
 fun readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {
   val (r, str) = my_fread (pffp | fp, i2sz(128))
   val () = print str
@@ -37,5 +29,5 @@ fun readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {
 implement main0 () = {
   val (pffp | fp) = fun_c2ats_fopen ("main.dats", "r")
   val () = readshow (pffp | fp)
-  val r = my_fclose (pffp | fp)
+  val r = fun_c2ats_fclose (pffp | fp)
 }
