@@ -26,16 +26,17 @@ fun my_fopen (file: string, mode: string):
 }
 
 fun my_fread {l:addr}{n:int | n > 0}
-  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {
+  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)):
+  [m:int] (size_t (m), strnptr (m)) = ret where {
   implement{} string_tabulate$fopr (s) = '_'
-  val buf = strnptr2strptr (string_tabulate len)
-  val pbuf = strptr2ptr buf
-  val _ = $STRING.memset_unsafe (pbuf, 0, len)
+  val buf_strptr  = strnptr2strptr (string_tabulate len)
+  val buf_ptr     = strptr2ptr buf_strptr
+  val _ = $STRING.memset_unsafe (buf_ptr, 0, len)
 
-  val r = fun_c2ats_fread (pffp | pbuf, 1UL, $UN.cast2ulint len, fp)
-  val r = $UN.cast2size r
-
-  val ret = (r, buf)
+  val r = fun_c2ats_fread (pffp | buf_ptr, 1UL, $UN.cast2ulint len, fp)
+  val r = $UN.cast r
+  val buf_strnptr = strptr2strnptr buf_strptr
+  val ret = (r, buf_strnptr)
 }
 
 fun my_fclose {l:addr} (pffp: type_c2ats_FILE @ l | fp: ptr l): int = ret where {
@@ -45,6 +46,7 @@ fun my_fclose {l:addr} (pffp: type_c2ats_FILE @ l | fp: ptr l): int = ret where 
 
 fun readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {
   val (r, str) = my_fread (pffp | fp, i2sz(128))
+  val str = strnptr2strptr str
   val () = print str
   val () = free str
   val () = if r > 0 then readshow (pffp | fp)
