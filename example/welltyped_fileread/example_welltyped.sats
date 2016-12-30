@@ -174,7 +174,7 @@ fun fun_c2ats_fgets: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(type_c2ats_FILE,
 fun fun_c2ats_fputs: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(type_c2ats_FILE, l2) | ptr l1, ptr l2) -> int = "mac#fputs"
 fun fun_c2ats_puts: {l1:addr} (!ptr_v_1(char, l1) | ptr l1) -> int = "mac#puts"
 fun fun_c2ats_ungetc: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | int, ptr l1) -> int = "mac#ungetc"
-fun fun_c2ats_fread: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, type_c2ats_size_t, type_c2ats_size_t, ptr l1) -> type_c2ats_size_t = "mac#fread"
+fun fun_c2ats_fread: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, type_c2ats_size_t, type_c2ats_size_t, ptr l1) -> size_t = "mac#fread"
 fun fun_c2ats_fwrite: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, type_c2ats_size_t, type_c2ats_size_t, ptr l1) -> type_c2ats_size_t = "mac#fwrite"
 fun fun_c2ats_fseek: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1, lint, int) -> int = "mac#fseek"
 fun fun_c2ats_ftell: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> lint = "mac#ftell"
