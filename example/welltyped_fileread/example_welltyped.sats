@@ -123,6 +123,7 @@ typedef type_c2ats___caddr_t = cPtr0(char)
 typedef type_c2ats___intptr_t = lint
 typedef type_c2ats___socklen_t = uint
 // File: /usr/include/stdio.h
+absvtype FILEref2 = ptr
 abst@ype struct_c2ats__IO_FILE // FIXME! Forward declaration.
 typedef type_c2ats_FILE = struct_c2ats__IO_FILE
 typedef type_c2ats___FILE = struct_c2ats__IO_FILE
@@ -141,9 +142,9 @@ fun fun_c2ats_rename: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr
 fun fun_c2ats_tmpfile: () -> [l1:addr] (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) = "mac#tmpfile"
 fun fun_c2ats_tmpnam: {l1:addr} (!ptr_v_1(char, l1) | ptr l1) -> [l2:addr] (ptr_v_1(char, l2) | ptr l2) = "mac#tmpnam"
 fun fun_c2ats_tempnam: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> [l3:addr] (ptr_v_1(char, l3) | ptr l3) = "mac#tempnam"
-fun fun_c2ats_fclose: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> int = "mac#fclose"
+fun fun_c2ats_fclose: {l1:addr} (FILEref2) -> int = "mac#fclose"
 fun fun_c2ats_fflush: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> int = "mac#fflush"
-fun fun_c2ats_fopen: (string, string) -> [l3:addr] (ptr_v_1(type_c2ats_FILE, l3) | ptr l3) = "mac#fopen"
+fun fun_c2ats_fopen: (string, string) -> FILEref2 = "mac#fopen"
 fun fun_c2ats_freopen: {l1,l2,l3:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2), !ptr_v_1(type_c2ats_FILE, l3) | ptr l1, ptr l2, ptr l3) -> [l4:addr] (ptr_v_1(type_c2ats_FILE, l4) | ptr l4) = "mac#freopen"
 fun fun_c2ats_fdopen: {l1:addr} (!ptr_v_1(char, l1) | int, ptr l1) -> [l2:addr] (ptr_v_1(type_c2ats_FILE, l2) | ptr l2) = "mac#fdopen"
 fun fun_c2ats_setbuf: {l1,l2:addr} (!ptr_v_1(type_c2ats_FILE, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> void = "mac#setbuf"
@@ -174,7 +175,7 @@ fun fun_c2ats_fgets: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(type_c2ats_FILE,
 fun fun_c2ats_fputs: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(type_c2ats_FILE, l2) | ptr l1, ptr l2) -> int = "mac#fputs"
 fun fun_c2ats_puts: {l1:addr} (!ptr_v_1(char, l1) | ptr l1) -> int = "mac#puts"
 fun fun_c2ats_ungetc: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | int, ptr l1) -> int = "mac#ungetc"
-fun fun_c2ats_fread: {l1:addr}{n,m:nat} (!ptr_v_1(type_c2ats_FILE, l1) | !strnptr(n*m)>>strnptr(o), size_t(n), size_t(m), ptr l1) -> #[o:nat | o <= n*m] size_t(o) = "mac#fread"
+fun fun_c2ats_fread: {n,m:nat} (!strnptr(n*m)>>strnptr(o), size_t(n), size_t(m), !FILEref2) -> #[o:nat | o <= n*m] size_t(o) = "mac#fread"
 fun fun_c2ats_fwrite: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, type_c2ats_size_t, type_c2ats_size_t, ptr l1) -> type_c2ats_size_t = "mac#fwrite"
 fun fun_c2ats_fseek: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1, lint, int) -> int = "mac#fseek"
 fun fun_c2ats_ftell: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -> lint = "mac#ftell"
