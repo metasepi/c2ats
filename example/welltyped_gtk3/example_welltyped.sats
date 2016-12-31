@@ -5554,7 +5554,7 @@ fun fun_c2ats_g_application_hold: {l1:addr} (!ptr_v_1(type_c2ats_GApplication, l
 fun fun_c2ats_g_application_release: {l1:addr} (!ptr_v_1(type_c2ats_GApplication, l1) | ptr l1) -> void = "mac#g_application_release"
 fun fun_c2ats_g_application_activate: {l1:addr} (!ptr_v_1(type_c2ats_GApplication, l1) | ptr l1) -> void = "mac#g_application_activate"
 fun fun_c2ats_g_application_open: {l1,l2,l2_1,l3:addr} (!ptr_v_1(type_c2ats_GApplication, l1), !ptr_v_2(type_c2ats_GFile, l2, l2_1), !ptr_v_1(type_c2ats_gchar, l3) | ptr l1, ptr l2, type_c2ats_gint, ptr l3) -> void = "mac#g_application_open"
-fun fun_c2ats_g_application_run: {l1,l2,l2_1:addr} (!ptr_v_1(type_c2ats_GApplication, l1), !ptr_v_2(char, l2, l2_1) | ptr l1, int, ptr l2) -> int = "mac#g_application_run"
+fun fun_c2ats_g_application_run: {l1,l2,l2_1:addr}{n:int | n >= 1} (!ptr_v_1(type_c2ats_GApplication, l1) | ptr l1, int, !argv(n)) -> int = "mac#g_application_run"
 fun fun_c2ats_g_application_quit: {l1:addr} (!ptr_v_1(type_c2ats_GApplication, l1) | ptr l1) -> void = "mac#g_application_quit"
 fun fun_c2ats_g_application_get_default: () -> [l1:addr] (ptr_v_1(type_c2ats_GApplication, l1) | ptr l1) = "mac#g_application_get_default"
 fun fun_c2ats_g_application_set_default: {l1:addr} (!ptr_v_1(type_c2ats_GApplication, l1) | ptr l1) -> void = "mac#g_application_set_default"

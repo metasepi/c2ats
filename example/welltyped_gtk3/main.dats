@@ -69,11 +69,8 @@ implement main0 (argc, argv) = {
 
   // status = g_application_run (G_APPLICATION (app), argc, argv);
   prval pfgapp = __create_view ()
-  prval pfargv = __create_view ()
-  val argv' = $UN.castvwtp0 the_null_ptr
-  val status = fun_c2ats_g_application_run (pfgapp, pfargv | app, 0, argv')
+  val status = fun_c2ats_g_application_run (pfgapp | app, argc, argv)
   prval () = __consume_view pfgapp
-  prval () = __consume_view pfargv
 
   // g_object_unref (app);
   val () = fun_c2ats_g_object_unref app
