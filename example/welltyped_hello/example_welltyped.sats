@@ -149,7 +149,7 @@ fun fun_c2ats_fdopen: {l1:addr} (!ptr_v_1(char, l1) | int, ptr l1) -> [l2:addr] 
 fun fun_c2ats_setbuf: {l1,l2:addr} (!ptr_v_1(type_c2ats_FILE, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> void = "mac#setbuf"
 fun fun_c2ats_setvbuf: {l1,l2:addr} (!ptr_v_1(type_c2ats_FILE, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, int, type_c2ats_size_t) -> int = "mac#setvbuf"
 fun fun_c2ats_fprintf: {l1,l2:addr} (!ptr_v_1(type_c2ats_FILE, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> int = "mac#fprintf"
-fun fun_c2ats_printf: {l1:addr} (!ptr_v_1(char, l1) | ptr l1) -> int = "mac#printf"
+fun fun_c2ats_printf: (string) -> int = "mac#printf"
 fun fun_c2ats_sprintf: {l1,l2:addr} (!ptr_v_1(char, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2) -> int = "mac#sprintf"
 fun fun_c2ats_vfprintf: {l1,l2:addr} (!ptr_v_1(type_c2ats_FILE, l1), !ptr_v_1(char, l2) | ptr l1, ptr l2, type_c2ats___gnuc_va_list) -> int = "mac#vfprintf"
 fun fun_c2ats_vprintf: {l1:addr} (!ptr_v_1(char, l1) | ptr l1, type_c2ats___gnuc_va_list) -> int = "mac#vprintf"
